@@ -1,0 +1,48 @@
+@font-face {
+  font-family: 'Merriweather';
+  font-style: normal;
+  font-weight: 300;
+  src: local('Merriweather Light'), local('Merriweather-Light'), url(ZvcMqxEwPfh2qDWBPxn6nlqLhyfIPHdkam6yaOmkgKs.woff) format('woff');
+}
+@font-face {
+  font-family: 'Merriweather';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Merriweather'), local('Merriweather-Regular'), url(RFda8w1V0eDZheqfcyQ4EBsxEYwM7FgeyaSgU71cLG0.woff) format('woff');
+}
+@font-face {
+  font-family: 'Merriweather';
+  font-style: normal;
+  font-weight: 700;
+  src: local('Merriweather Bold'), local('Merriweather-Bold'), url(ZvcMqxEwPfh2qDWBPxn6nvnZvTSLrt0ODqUY3DjsCVw.woff) format('woff');
+}
+@font-face {
+  font-family: 'Merriweather';
+  font-style: normal;
+  font-weight: 900;
+  src: local('Merriweather Black'), local('Merriweather-Black'), url(ZvcMqxEwPfh2qDWBPxn6npP-D8x1AC07S4rUZgqTae0.woff) format('woff');
+}
+@font-face {
+  font-family: 'Merriweather';
+  font-style: italic;
+  font-weight: 300;
+  src: local('Merriweather Light Italic'), local('Merriweather-LightItalic'), url(EYh7Vl4ywhowqULgRdYwIDtYgm9rjphiiMbu-IPgXuY.woff) format('woff');
+}
+@font-face {
+  font-family: 'Merriweather';
+  font-style: italic;
+  font-weight: 400;
+  src: local('Merriweather Italic'), local('Merriweather-Italic'), url(So5lHxHT37p2SS4-t60SlFXsWt8J-5NZ3D36lHu5cw8.woff) format('woff');
+}
+@font-face {
+  font-family: 'Merriweather';
+  font-style: italic;
+  font-weight: 700;
+  src: local('Merriweather Bold Italic'), local('Merriweather-BoldItalic'), url(EYh7Vl4ywhowqULgRdYwIPITrBMXZjOMIbCeC-e691k.woff) format('woff');
+}
+@font-face {
+  font-family: 'Merriweather';
+  font-style: italic;
+  font-weight: 900;
+  src: local('Merriweather Black Italic'), local('Merriweather-BlackItalic'), url(EYh7Vl4ywhowqULgRdYwINY6DnXeJkFhv_Zau0_dx1I.woff) format('woff');
+}

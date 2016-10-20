@@ -1,0 +1,56 @@
+
+.document {
+    font-family: Gentium Book Basic;
+    font-size: 1.5em;
+}
+
+h1, .title {
+    font-family: Lato;
+}
+
+
+.navbar-static-top {
+    z-index: 9000;
+}
+
+.progressbar-container {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    margin-left: -150px; /* half width of the spinner gif */
+    margin-top: -128px; /* half height of the spinner gif */
+    text-align:center;
+    z-index:9999;
+    overflow: auto;
+    width: 300px; /* width of the spinner gif */
+    height: 10px; /*hight of the spinner gif +2px to fix IE8 issue */
+}
+
+.spinner {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    margin-left: -150px; /* half width of the spinner gif */
+    margin-top: -150px; /* half height of the spinner gif */
+    text-align:center;
+    z-index:9999;
+    overflow: auto;
+    width: 300px; /* 64px; /* width of the spinner gif */
+    height: 300px; /* 66px; /*hight of the spinner gif +2px to fix IE8 issue */
+}
+
+footer {
+    border-top: 2px solid grey;
+    margin-top: 10px;
+    padding-top: 10px;
+}
+
+#screen {
+    position: absolute;
+    left: 0;
+    top: 0;
+    background: #000;
+    z-index: 9998;
+}
+
+
