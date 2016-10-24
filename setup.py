@@ -14,6 +14,8 @@ requires = [
     'pyramid_debugtoolbar',
     'waitress',
     'docutils',
+    'python-dateutil',
+    'whoosh'
     ]
 
 setup(name='cmsfix',
