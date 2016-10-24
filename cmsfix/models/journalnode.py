@@ -147,11 +147,11 @@ class JournalItemWorkflow(GroupwareWorkflow):
     def is_accessible(self, node, user):
         # journal node is accessible to owner and container's user
         print('check is_accessible()')
-        if node.user.id == user.id:
+        if node.user_id == user.id:
             return True
         if isinstance(node, JournalNode):
             print('check parent container')
-            if node.parent.user.id == user.id:
+            if node.parent.user_id == user.id:
                 return True
         if isinstance(node, JournalItemNode):
             return get_workflow(node.parent).is_accessible(node.parent, user)
