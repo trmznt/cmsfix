@@ -124,12 +124,17 @@ def parse_form( f, d = None ):
     d = d or dict()
     d['_stamp_'] = float(f['cmsfix-stamp'])
     d['slug'] = f.get('cmsfix-slug', None)
-    d['group_id'] = int(f.get('cmsfix-group_id', 0))
-    d['user_id'] = int(f.get('cmsfix-user_id', 0))
-    d['publish_time'] = f.get('cmsfix-publish_time', '')
-    d['expire_time'] = f.get('cmsfix-expire-_time', '')
+    if 'cmsfix-group_id' in f:
+        d['group_id'] = int(f.get('cmsfix-group_id'))
+    if 'cmsfix-user_id' in f:
+        d['user_id'] = int(f.get('cmsfix-user_id'))
+    if 'publish_time' in f:
+        d['publish_time'] = f.get('cmsfix-publish_time')
+    if 'expire_time' in f:
+        d['expire_time'] = f.get('cmsfix-expire-_time')
     d['mimetype_id'] = int(f.get('cmsfix-mimetype_id', 0))
-    d['tags'] = f.getall('cmsfix-tags')
+    if 'tags' in f:
+        d['tags'] = f.getall('cmsfix-tags')
 
     return d
 
