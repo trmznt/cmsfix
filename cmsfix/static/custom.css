@@ -13,6 +13,15 @@ h1, .title {
     z-index: 9000;
 }
 
+.navbar-brand,
+.navbar-nav li a {
+    line-height: 30px;
+}
+
+.navbar-form {
+    padding-top: 5px;
+}
+
 .progressbar-container {
     position: fixed;
     top: 50%;
