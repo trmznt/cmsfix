@@ -51,6 +51,16 @@ class BaseWorkflow(object):
         """ can the user access (or view) this node """
         raise NotImplementedError()
 
+    def set_defaults(self, node, user, parent_node):
+        """ set default parameters for a new node """
+        raise NotImplementedError()
+
+    def show_menu(self, node, request):
+        raise NotImplementedError()
+
+    def process_menu(self, node, request):
+        raise NotImplementedError()
+
 
 class GroupwareWorkflow(object):
     """ simple workflow, suitable for intranet
