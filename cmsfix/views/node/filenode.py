@@ -71,7 +71,7 @@ def add(request, node):
         if request.params['_method'].endswith('_edit'):
             return HTTPFound(location = request.route_url('node-edit', path=n.url))
 
-        return HTTPFound(location = request.route_url('node-info', path=node.url))
+        return HTTPFound(location = request.route_url('node-content', path=node.url))
 
 
     with get_dbhandler().session().no_autoflush:
