@@ -99,12 +99,13 @@ def M_ListChildNodes(node, components):
 def M_Img(node, components):
 
     path = components[0]
-    print(path)
     if path.startswith('http') or path.startswith('ftp'):
         url = path
     elif path.startswith('//'):
-        image_node_id = int(path[3:])
+        image_node_id = int(path[2:])
         image_node = get_dbhandler().get_node_by_id(image_node_id)
+        if not image_node:
+            return '[[ Invalid image macro: non existent node %d]]' % image_node_id
         url = image_node.path
     elif path.startswith('/'):
         # check node with this path
