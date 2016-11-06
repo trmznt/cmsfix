@@ -40,6 +40,8 @@ class DBHandler(rho_handler.DBHandler):
     def get_node_by_id(self, node_id):
         return self.Node.get(node_id, self.session())
 
+    def get_nodes_by_ids(self, node_ids):
+        return self.Node.query(self.session()).filter( self.Node.id.in_( node_ids ))
 
     def get_nodes(self, params = None):
         if not params:
