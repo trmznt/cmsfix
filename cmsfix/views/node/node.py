@@ -23,13 +23,12 @@ def render_node(node, request):
 
 def render_node_content(node, request):
 
-    wf = get_workflow()
-
     table_body = tbody()
     for n in node.children:
+        wf = get_workflow(n)
         table_body.add(
             tr(
-                td(literal('<input type="checkbox" name="node-id" value="%d">' % n.id)),
+                td(literal('<input type="checkbox" name="node-ids" value="%d">' % n.id)),
                 td(a(n.title or n.slug, href=request.route_url('node-index', path=n.url))),
                 td(n.id),
                 td(n.__class__.__name__),
@@ -57,12 +56,17 @@ def render_node_content(node, request):
         table_body
     )
 
+    content_bar = selection_bar('node-ids',
+                action=request.route_url('node-action', path=node.url))
+    content_table, content_js = content_bar.render(content_table)
+
     html = row( div(content_table, class_='col-md-10') )
 
     return render_to_response('cmsfix:templates/node/content.mako',
             {   'node': node,
                 'toolbar': get_toolbar(node, request),
                 'html': html,
+                'code': content_js,
             }, request = request )
 
 
