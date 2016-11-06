@@ -2,7 +2,7 @@
 from cmsfix.models.node import *
 from cmsfix.models.pagenode import PageNode
 from cmsfix.models.filenode import FileNode
-from cmsfix.lib.workflow import set_workflow, GroupwareWorkflow
+from cmsfix.lib.workflow import set_workflow, get_workflow, GroupwareWorkflow
 
 
 @Node.inherited_container
