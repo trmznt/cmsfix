@@ -31,7 +31,7 @@ class Node(BaseMixIn, Base):
     site_id = Column(types.Integer, ForeignKey('sites.id'), nullable=False)
     site = relationship('Site', uselist=False)
 
-    uuid = Column(types.CHAR(16), nullable=False, unique=True)
+    uuid = Column(UUID, nullable=False, unique=True)
     slug = Column(types.String(128), nullable=False, index=True)
     path = Column(types.String(1024), nullable=False, server_default='')
     level = Column(types.Integer, nullable=False, server_default='-1')
@@ -92,9 +92,9 @@ class Node(BaseMixIn, Base):
 
     def __init__(self, UUID=None, **kwargs):
         if not UUID:
-            self.uuid = uuid.uuid1().bytes
+            self.uuid = uuid.uuid1()
         else:
-            self.uuid = UUID.bytes
+            self.uuid = UUID
 
         super().__init__(**kwargs)
 
@@ -109,6 +109,16 @@ class Node(BaseMixIn, Base):
             self.group_id = obj['group_id']
         if 'mimetype_id' in obj and type(obj['mimetype_id']) == int:
             self.mimetype_id = obj['mimetype_id']
+
+
+    def clear(self):
+        """ this clear all child nodes and perform necessary cleanup """
+
+        session = object_session(self)
+
+        for child in self.children:
+            child.clear()
+            session.delete(child)
 
 
     def generate_slug(self):
