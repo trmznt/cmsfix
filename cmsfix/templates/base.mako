@@ -48,6 +48,18 @@
           </button>
           <a class="navbar-brand" href="/">${request.get_resource('cmsfix.title', 'CMSFix')}</a>
         </div>
+
+        <div class="col-md-9 col-sm-7">
+        <form class="navbar-form" role="search" action='/search'>
+        <div class="input-group" style="width: 100%;">
+            <input type="text" class="form-control" placeholder="Search" name="q" id="srch-term">
+            <div class="input-group-btn">
+                <button class="btn btn-default" type="submit"><i class="glyphicon glyphicon-search"></i></button>
+            </div>
+        </div>
+        </form>
+        </div>
+
         <div id="navbar" class="navbar-collapse collapse">
           ${user_menu(request)}
         </div><!--/.nav-collapse -->
