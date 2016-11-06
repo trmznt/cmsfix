@@ -3,6 +3,7 @@ from rhombus.lib.utils import get_dbhandler, cout, cerr
 from rhombus.views import *
 from rhombus.views.generics import error_page
 from rhombus.lib.tags import *
+from rhombus.lib.modals import popup, modal_delete
 
 from cmsfix.lib.workflow import get_workflow
 
@@ -128,7 +129,7 @@ def action(request):
 
         # get
         if request.GET['_method'] == 'set-state':
-            wf = get_workflow()
+            wf = get_workflow(n)
             wf.process_menu(n, request)
 
             # return to referrer
@@ -136,11 +137,56 @@ def action(request):
 
     elif request.POST:
 
-        # post
-        raise NotImplementedError('Not implemented yet!')
+        return action_post(request, node)
 
     return error_page(request, 'HTTP method not implemented!')
 
+
+def action_post(request, node):
+
+    method = request.params.get('_method')
+    dbh = get_dbhandler()
+
+    if method == 'delete':
+
+        node_ids = [ int(x) for x in request.params.getall('node-ids')]
+        nodes = dbh.get_nodes_by_ids(node_ids)
+
+        if nodes.count() == 0:
+            return Response(modal_error)
+
+        return Response(
+            modal_delete(
+                title = 'Removing Node(s)',
+                content = literal(
+                    'You are going to remove the following node(s): '
+                    '<ul>' +
+                    ''.join( '<li>%s</li>' % n.title for n in nodes) +
+                    '</ul>'
+                ),
+                request = request,
+
+            ),
+            request = request
+        )
+
+    elif method == 'delete/confirm':
+
+        node_ids = [ int(x) for x in request.params.getall('node-ids')]
+        nodes = dbh.get_nodes_by_ids(node_ids)
+
+        for n in nodes:
+            n.clear()
+            dbh.session().delete(n)
+
+        dbh.session().flush()
+        request.session.flash(
+            'success', 'Node(s) %s has been removed.' %
+            '; '.join( str(x) for x in node_ids ))
+
+        return HTTPFound( location = request.referrer or node.path )
+
+    return error_page(request, 'action post not implemented')
 
 
 def tag_lookup(request):
