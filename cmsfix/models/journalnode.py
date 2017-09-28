@@ -98,6 +98,8 @@ class JournalWorkflow(GroupwareWorkflow):
         return False
 
     def is_accessible(self, node, user):
+        if not node or not user:
+            return False
         if node.user_id == user.id or node.parent.user_id == user.id:
             return True
         if node.group.has_member(user) or node.parent.group.has_member(user):
