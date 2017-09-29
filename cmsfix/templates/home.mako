@@ -1,4 +1,4 @@
-<%inherit file="rhombus:templates/base.mako" />
+<%inherit file="cmsfix:templates/base.mako" />
 
 <h1>CMSFix Generic Index</h1>
 
