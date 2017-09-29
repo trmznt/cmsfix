@@ -11,6 +11,108 @@ from cmsfix.views.node import get_toolbar, get_node, get_add_menu
 
 from pyramid.renderers import render_to_response
 
+
+class NodeViewer(object):
+
+
+    def __init__(self, node, request):
+        self.node = node
+        self.request = request
+
+
+    # HTTP-accessible methods
+
+    def index(self, request=None):
+        req = request or self.request
+        return self.render(req)
+
+    def view(self, request=None):
+        return self.index(request)
+
+    def content(self, request=None):
+        req = request or self.request
+
+    def edit(self, request=None):
+        req= request or self.request
+
+    def add(self, request=None):
+        req = request or self.request
+
+    def info(self, request=None):
+        req = request or self.request
+
+    def action(self, request=None):
+        req = request or self.request
+
+
+    # internal methods
+
+    def render(self, request):
+        pass
+
+    def edit_form(self, request):
+        pass
+
+    def parse_form(self, request):
+        pass
+
+
+    def breadcrumb(self, request):
+
+        leaf = self.node
+        slugs = []
+        while leaf:
+            slugs.append( (leaf.title, leaf.path) )
+            leaf = leaf.parent
+
+        slugs = reversed(slugs)
+
+        # use bootstrap's breadcrumb
+        html = ol(class_='breadcrumb')
+        for (title, url) in slugs:
+            html.add(
+                li(a(title, href=url))
+            )
+
+        return html
+
+
+    def toolbar(self, request, workflow=None):
+
+        n = self.node
+
+        if not request.user:
+            return div('')
+
+        if not workflow:
+            wf = get_workflow(n)
+        else:
+            wf = workflow
+
+        if not wf.is_manageable(n, request.user):
+            return div(node_info(request, n))
+
+        bar = nav(class_='navbar navbar-default')[
+            div(class_='container-fluid')[
+                div(class_='collapse navbar-collapse')[
+                    ul(class_='nav navbar-nav')[
+                        li(a('View', href=request.route_url('node-view', path=n.url))),
+                        li(a('Edit', href=request.route_url('node-edit', path=n.url))),
+                        li(a('Content', href=request.route_url('node-content', path=n.url))),
+                        li(a('Info', href=request.route_url('node-info', path=n.url))),
+                        get_add_menu(n, request),
+                    ],
+                    ul(class_='nav navbar-nav navbar-right')[
+                        li(a('Delete')),
+                        wf.show_menu(n, request)
+                    ]
+                ]
+            ]
+        ]
+
+        return div(breadcrumb(request, n), node_info(request, n), bar)
+
+
 def index(request, node):
 
     return render_node(node, request)
@@ -117,7 +219,8 @@ def edit_form(node, request, create=False):
             data: function(term, page) { return { q: term }; },
             results: function(data, page) { return { results: data }; }
         }
-    })
+    });
+    
     ''' % request.route_url('tag-lookup')
     return eform, jscode
 

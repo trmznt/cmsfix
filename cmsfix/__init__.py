@@ -13,7 +13,7 @@ from cmsfix.models.pagenode import PageNode
 from cmsfix.models.journalnode import JournalNode, JournalItemNode
 from cmsfix.models.filenode import FileNode
 from cmsfix.models.commentnode import CommentNode
-from cmsfix.views.node import register_module
+from cmsfix.views.node import register_module, register_viewer
 from cmsfix.views.node import node as node_mod, pagenode as pagenode_mod
 from cmsfix.views.node import journalnode as journalnode_mod, journalitemnode as journalitemnode_mod
 from cmsfix.views.node import filenode as filenode_mod
@@ -79,6 +79,10 @@ def includeme( config ):
     register_module(FileNode, filenode_mod)
     register_module(JournalNode, journalnode_mod)
     register_module(JournalItemNode, journalitemnode_mod)
+
+    register_viewer(Node, node_mod.NodeViewer)
+    register_viewer(PageNode, pagenode_mod.PageNodeViewer)
+    register_viewer(FileNode, filenode_mod.FileNodeViewer)
 
     config.override_asset('rhombus:templates/base.mako', 'cmsfix:templates/base.mako')
     config.override_asset('rhombus:templates/plainbase.mako', 'cmsfix:templates/plainbase.mako')

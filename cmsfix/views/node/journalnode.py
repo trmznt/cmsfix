@@ -5,8 +5,71 @@ from cmsfix.views.node.node import ( nav, render_node_content, node_submit_bar,
             edit_form as node_edit_form,
             parse_form as node_parse_form,
             breadcrumb, node_info,
+            NodeViewer,
 )
 from cmsfix.lib.workflow import get_workflow
+
+
+class JournalNodeViewer(NodeViewer):
+
+    def index(self, request=None):
+
+        # journal and journal item always require authenticated users
+
+        request = request or self.request
+        if not request.user:
+            return error_page(request, 'Forbidden page!')
+
+        return self.render(request)
+
+
+    def render(self, request):
+
+        node = self.node
+        content = div(breadcrumb(request, node), node_info(request, node))
+        content.add(
+            h2(node.title),
+        )
+
+        if node.user_id == request.user.id:
+            content.add(
+                a('Create new log', class_='btn btn-success',
+                    href=request.route_url('node-add', path=node.url,
+                            _query = { 'type': JournalItemNode.__name__})
+                ),
+            )
+
+        tbl_body = tbody()
+        for n in node.children:
+            tbl_body.add(
+                tr(
+                    td(a(str(n.log_date), href=request.route_url('node-index', path=n.url))),
+                    td(str(n.create_time)),
+                    td('draft'),
+                    td(n.title)
+                )
+            )
+        log_table = table(class_='table table-condensed table-striped')
+        log_table.add(
+            thead(
+                tr(
+                    th('Date', style='width: 6em;'),
+                    th('Submitted at', style='width: 12em;'),
+                    th('Status', style='width: 6em;'),
+                    th('Title')
+                )
+            )
+        )
+        log_table.add( tbl_body )
+
+        content.add( log_table )
+
+
+        return render_to_response('cmsfix:templates/node/generics.mako',
+            {
+                'content': content,
+            }, request = request)
+
 
 
 def index(request, node):

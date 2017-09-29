@@ -21,6 +21,8 @@ def index(request):
         return error_page(request, 'Page is not accessible!')
 
     module = get_module(n.__class__)
+    viewer = get_viewer(n.__class__)
+    return viewer(n, request).index()
     return module.index(request, n)
 
 
@@ -216,6 +218,17 @@ def get_module(nodeclass):
     return __MODULES__[nodeclass]
 
 
+__VIEWERS__ = {}
+__NODECLASSES__ = {}
+
+def register_viewer(nodeclass, viewerclass):
+    global __VIEWERS__, __NODECLASSES__
+    __VIEWERS__[nodeclass] = viewerclass
+
+def get_viewer(nodeclass):
+    return __VIEWERS__[nodeclass]
+
+
 def get_path(request):
 
     urlpath = posixpath.normpath('/' + request.matchdict.get('path', ''))
@@ -266,7 +279,6 @@ def get_add_menu(node, request):
                 ) for c in node.get_item_classes()
             )
         ]
-
     ]
 
     return add_menu_list

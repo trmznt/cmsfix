@@ -2,7 +2,8 @@ from cmsfix.views import *
 from cmsfix.models.filenode import FileNode
 from cmsfix.views.node.node import ( nav, render_node_content, node_submit_bar,
             edit_form as node_edit_form,
-            parse_form as node_parse_form
+            parse_form as node_parse_form,
+            NodeViewer,
 )
 
 from rhombus.views.fso import save_file
@@ -12,6 +13,20 @@ from rhombus.lib.utils import random_string
 from pyramid.response import FileResponse, Response, FileIter
 
 import os.path, mimetypes
+
+class FileNodeViewer(NodeViewer):
+
+    def render(self, request):
+
+        if self.node.pathname:
+            return FileResponse( self.node.pathname, content_type=self.node.mimetype,
+                        request=request )
+        else:
+            return Response( app_iter = FileIter(self.node.fp),
+                        content_type = self.node.mimetype, request=request )
+
+        raise NotImplementedError()
+
 
 
 # exposable functions
