@@ -5,6 +5,7 @@ from cmsfix.views.node.node import ( nav, render_node_content, node_submit_bar,
             edit_form as node_edit_form,
             parse_form as node_parse_form,
             toolbar,
+            NodeViewer,
 )
 from cmsfix.models.pagenode import PageNode
 from cmsfix.lib.workflow import get_workflow
@@ -13,6 +14,27 @@ from rhombus.lib.utils import get_dbhandler, cerr, cout
 from rhombus.lib.tags import *
 
 import docutils.core
+
+class PageNodeViewer(NodeViewer):
+
+    def render(self, request):
+
+        node = self.node
+
+        # set the formatter
+        if node.mimetype == 'text/x-rst':
+            content = literal(render_rst(node.content))
+            content = literal(postrender(content, node))
+        elif node.mimetype == 'text/html':
+            content = literal(node.content)
+        else:
+            content = node.content
+
+        return render_to_response('cmsfix:templates/pagenode/node.mako',
+            {   'node': node,
+                'toolbar': self.toolbar(request),
+                'html': content,
+            }, request = request )
 
 
 def index(request, node):
@@ -109,6 +131,8 @@ def render_pagenode(node, request):
     if node.mimetype == 'text/x-rst':
         content = literal(render_rst(node.content))
         content = literal(postrender(content, node))
+    elif node.mimetype == 'text/html':
+        content = literal(node.content)
     else:
         content = node.content
 
@@ -132,8 +156,13 @@ def edit_form(node, request, create=False):
         input_text('cmsfix-title', 'Title', value=node.title, offset=1),
         node_submit_bar(create),
         input_textarea('cmsfix-content', 'Content', value=node.content, offset=1, size="18x8"),
+        #div(literal(node.content) if node.mimetype == 'text/html' else node.content,
+        #    id='cmsfix-content', name='cmsfix-content'),
         input_textarea('cmsfix-summary', 'Summary', value=node.summary, offset=1, size='5x8')
     )
+
+    eform.get('cmsfix-mimetype_id').attrs['onChange'] = 'set_editor(this.value);'
+    jscode += 'var html_mimetype=%d;\n' % dbh.EK.getid('text/html', dbh.session())
 
     return eform, jscode
 
@@ -170,9 +199,7 @@ def toolbar_xxx(request, n):
                     wf.show_menu(n, request)
                 ]
             ]
-
         ]
-
     ]
     return bar
 
