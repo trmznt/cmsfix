@@ -13,9 +13,10 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>${request.get_resource('cmsfix.title', None) or "CMSFix"}</title>
-  <meta name='viewport' content='width=device-width, initial-scale=1.0' />
 
   <!-- styles -->
   <link href="${request.static_url('rhombus:static/bootstrap/css/bootstrap.min.css')}" rel="stylesheet" />
@@ -90,6 +91,12 @@
       </div>
       </div>
     </div>
+    </footer>
+
+    <br><br><br>
+
+    <footer class="sticky">
+    Test
     </footer>
 
 ${self.scriptlinks()}
