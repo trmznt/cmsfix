@@ -71,14 +71,14 @@ class BaseWorkflow(object):
 class GroupwareWorkflow(object):
     """ simple workflow, suitable for intranet
         0 - public - all can access
-        1 - restricted - only logged user can access
-        2 - protected - permission based on group,
+        1 - protected - only logged user can access
+        2 - restricted - permission based on group,
                 * group owner can edit/manage
                 * group member can access
         3 - private - only user can access
     """
 
-    states = { 0: 'public', 1: 'restricted', 2: 'protected', 3: 'private' }
+    states = { 0: 'public', 1: 'protected', 2: 'restricted', 3: 'private' }
     styles = {  0: 'label label-success', 1: 'label label-info',
                 2: 'label label-warning', 3: 'label label-danger '}
 
