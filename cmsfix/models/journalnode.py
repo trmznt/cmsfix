@@ -78,6 +78,16 @@ class JournalItemNode(PageNode):
                 self.log_date = obj['log_date']
 
 class JournalWorkflow(GroupwareWorkflow):
+    """ journal workflow
+        0 - public - all can access
+        1 - protected - only logged user can access
+        2 - restricted - permission based on group,
+                * group admins can edit/manage items
+                * group member can access and add items
+        3 - private - only user & group admins can access
+
+        XXX: the above is not implemented yet.
+    """
 
     def set_defaults(self, node, user, parent_node):
         node.group_id = parent_node.group_id
