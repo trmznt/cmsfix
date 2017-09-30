@@ -5,11 +5,19 @@ from cmsfix.views.node.node import ( nav, render_node_content, node_submit_bar, 
             parse_form as node_parse_form,
             toolbar
 )
-from cmsfix.views.node.pagenode import parse_form as pagenode_parse_form, render_rst
+from cmsfix.views.node.pagenode import parse_form as pagenode_parse_form, render_rst, PageNodeViewer
 from cmsfix.lib.workflow import get_workflow
 from dateutil.parser import parse as parse_date
 import time, datetime
 
+
+class JournalItemNodeViewer(PageNodeViewer):
+
+    def new_node(self):
+        n = JournalItemNode()
+        n.log_date = datetime.date.today()
+        n.mimetype_id = get_dbhandler().get_ekey('text/x-rst').id
+        return n
 
 def index(request, node):
     return view(request, node)
