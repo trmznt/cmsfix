@@ -5,15 +5,20 @@ from rhombus.lib.roles import SYSADM, DATAADM
 from rhombus.lib.tags import ul, li, a, span
 
 
+## global workflow
 __WORKFLOW__ = None
+
+## each node child class can have its own specific workflow
 __WORKFLOW_DICT__ = {}
 
 
 def set_workflow(obj, cls=None):
     global __WORKFLOW__, __WORKFLOW_DICT__
     if not cls:
+        # set global workflow
         __WORKFLOW__ = obj
     else:
+        # set specific node child class workflow
         __WORKFLOW_DICT__[cls] = obj
 
 
@@ -21,6 +26,7 @@ def get_workflow(instance=None):
 
     try:
         if instance:
+            # try specific workflow first
             return __WORKFLOW_DICT__[instance.__class__]
     except KeyError:
         pass
