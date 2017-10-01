@@ -20,10 +20,10 @@ def index(request):
     if not wf.is_accessible(n, request.user):
         return error_page(request, 'Page is not accessible!')
 
-    module = get_module(n.__class__)
+    #module = get_module(n.__class__)
     viewer = get_viewer(n.__class__)
     return viewer(n, request).index()
-    return module.index(request, n)
+    #return module.index(request, n)
 
 
 @roles(PUBLIC)
@@ -35,8 +35,10 @@ def view(request):
     if not wf.is_manageable(n, request.user):
         return error_page(request, 'Page is not manageable by current user!')
 
-    module = get_module(n.__class__)
-    return module.view(request, n)
+    #module = get_module(n.__class__)
+    viewer = get_viewer(n.__class__)
+    return viewer(n, request).view()
+    #return module.view(request, n)
 
 
 @roles(PUBLIC)
@@ -47,6 +49,9 @@ def content(request):
 
     if not wf.is_manageable(n, request.user):
         return error_page(request, 'You are not authorized to view the content of this node!')
+
+    viewer = get_viewer(n.__class__)
+    return viewer(n, request).content()
 
     module = get_module(n.__class__)
     return module.content(request, n)
@@ -86,7 +91,7 @@ def edit(request):
     n = get_node(request)
     wf = get_workflow(n)
 
-    if not wf.is_manageable(n, request.user):
+    if not wf.is_editable(n, request.user):
         return error_page(request, 'You are not authorized to edit this node!')
 
     # check stamp consistency
@@ -95,6 +100,9 @@ def edit(request):
                 'Data entry has been modified by %s at %s. Please cancel and re-edit your entry.'
                 % (n.lastuser.login, n.stamp)
             )
+
+    viewer = get_viewer(n.__class__)
+    return viewer(n, request).edit()
 
     module = get_module(n.__class__)
     return module.edit(request, n)
@@ -114,6 +122,10 @@ def add(request):
     node_type = request.params.get('type', '')
     if not node_type:
         return error_page(request, 'ERR: no node type to add!')
+
+    for (cls, viewer) in __VIEWERS__.items():
+        if cls.__name__ == node_type:
+            return viewer(None, request).add(request=None, parent_node=n)
 
     for (cls, module) in __MODULES__.items():
         if cls.__name__ == node_type:
@@ -259,7 +271,12 @@ def get_toolbar(node, request):
 def get_add_menu(node, request):
     """ create Add menu items """
 
-    #
+    item_classes = node.get_item_classes()
+
+    # check if the node can be added by this function
+    if len(item_classes) == 0:
+        return ''
+
     add_menu_list = li(class_ = "dropdown" )[
         a(class_='dropdown-toggle', role='button',
                     **  { 'data-toggle': 'dropdown',
@@ -276,7 +293,7 @@ def get_add_menu(node, request):
                     a(c.get_label(),
                         href=request.route_url('node-add',
                                     path=node.url, _query={ 'type': c.__name__ }))
-                ) for c in node.get_item_classes()
+                ) for c in item_classes
             )
         ]
     ]

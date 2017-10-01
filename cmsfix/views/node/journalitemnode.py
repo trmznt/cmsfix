@@ -1,23 +1,104 @@
 from cmsfix.models.journalnode import JournalItemNode
 from cmsfix.views import *
-from cmsfix.views.node.node import ( nav, render_node_content, node_submit_bar, breadcrumb,
-            edit_form as node_edit_form,
-            parse_form as node_parse_form,
-            toolbar
+from cmsfix.views.node.node import ( nav, node_submit_bar, breadcrumb,
 )
 from cmsfix.views.node.pagenode import parse_form as pagenode_parse_form, render_rst, PageNodeViewer
 from cmsfix.lib.workflow import get_workflow
 from dateutil.parser import parse as parse_date
+from cmsfix.lib.macro import postrender
+
 import time, datetime
 
 
 class JournalItemNodeViewer(PageNodeViewer):
+
+    def render(self, request):
+
+        n = self.node
+
+        content = div()[
+            #div( breadcrumb(request, node.parent) ),
+            self.toolbar(request),
+            h3('Log date: %s | Title: %s' % (n.log_date, n.title) ),
+
+        ]
+
+        if n.mimetype == 'text/x-rst':
+            html = literal(render_rst(n.content))
+            html = literal(postrender(html, n))
+        else:
+            html = n.content
+
+        content.add( html )
+
+        return render_to_response('cmsfix:templates/node/generics.mako',
+                { 'content': content,
+                }, request = request )
+
 
     def new_node(self):
         n = JournalItemNode()
         n.log_date = datetime.date.today()
         n.mimetype_id = get_dbhandler().get_ekey('text/x-rst').id
         return n
+
+
+    def edit_form(self, request, create=False):
+        """ use a simple interface for journal """
+
+        dbh = get_dbhandler()
+        n = self.node
+
+        eform = form( name='cmsfix/node', method=POST )
+        eform.add(
+
+            fieldset(
+                input_hidden(name='cmsfix-stamp', value='%15f' % n.stamp.timestamp() if n.stamp else -1),
+                input_text('cmsfix-log_date', 'Log Date', value=n.log_date, offset=1) if create else
+                input_show('', 'Log Date', value=n.log_date, offset=1),
+                input_select_ek('cmsfix-mimetype_id', 'MIME type', value=n.mimetype_id,
+                    parent_ek = dbh.get_ekey('@MIMETYPE'), offset=1),
+                name='cmsfix.node-header'
+            ),
+
+            fieldset(
+                input_text('cmsfix-title', 'Title', value=n.title, offset=1),
+                node_submit_bar(create),
+                input_textarea('cmsfix-content', 'Content', value=n.content, offset=1, size="18x8"),
+                input_textarea('cmsfix-summary', 'Summary', value=n.summary, offset=1, size="3x8"),
+                name='cmsfix.node-main'),
+
+            fieldset(
+                input_select('cmsfix-tags', 'Tags', offset=1, multiple=True),
+                node_submit_bar(create),
+                name='cmsfix.node-footer'
+            )
+        )
+
+        jscode = '''
+        $("#cmsfix-tags").select2({
+            tags: true,
+            tokenSeparators: [',',' '],
+            minimumInputLength: 3,
+            ajax: {
+                url: "%s",
+                dataType: 'json',
+                data: function(term, page) { return { q: term }; },
+                results: function(data, page) { return { results: data }; }
+            }
+        })
+        ''' % request.route_url('tag-lookup')
+
+        return eform, jscode
+
+
+    def parse_form(self, f, d = None):
+
+        d = super().parse_form(f, d)
+        if 'cmsfix-log_date' in f:
+            d['log_date'] = parse_date(f['cmsfix-log_date'], dayfirst=False)
+        return d
+
 
 def index(request, node):
     return view(request, node)

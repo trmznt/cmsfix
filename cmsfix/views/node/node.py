@@ -14,6 +14,8 @@ from pyramid.renderers import render_to_response
 
 class NodeViewer(object):
 
+    template_edit_form = 'cmsfix:templates/node/edit.mako'
+
 
     def __init__(self, node, request):
         self.node = node
@@ -31,12 +33,74 @@ class NodeViewer(object):
 
     def content(self, request=None):
         req = request or self.request
+        return self.render_content(req)
 
     def edit(self, request=None):
-        req= request or self.request
-
-    def add(self, request=None):
         req = request or self.request
+
+        n = self.node
+        if req.method == 'POST':
+            # update data
+
+            n.update( self.parse_form(req.params) )
+
+            if req.params['_method'] == 'save_edit':
+                return HTTPFound(location = req.route_url('node-edit', path=n.url))
+
+            print(n.url)
+            return HTTPFound(location = req.route_url('node-index', path=n.url))
+
+        eform, jscode = self.edit_form(req)
+
+        return self.render_edit_form(req, eform, jscode)
+
+
+    def add(self, request=None, parent_node=None):
+
+        req = request or self.request
+
+        assert(parent_node != None)
+
+        # all permission has been taken care by workflow, so assume
+        # every sanity checked has been performed
+
+        if req.method == 'POST':
+
+            n = self.new_node()
+            get_workflow(n).set_defaults(n, req.user, parent_node)
+            n.update(self.parse_form(req.params))
+            if not n.slug:
+                n.generate_slug()
+            parent_node.add(n)
+            get_dbhandler().session().flush()
+            n.ordering = 19 * n.id
+
+            if req.params['_method'].endswith('_edit'):
+                return HTTPFound(location = req.route_url('node-edit', path=n.url))
+
+            return HTTPFound(location = req.route_url('node-index', path=n.url))
+
+        dbh = get_dbhandler()
+        with dbh.session().no_autoflush:
+
+            # create a dummy instance just for the purpose of showing edit form
+            self.node = self.new_node()
+            get_workflow(self.node).set_defaults(self.node, req.user, parent_node)
+            #self.node.parent_id = parent_node.id
+            #self.node.site = parent_node.site
+            #self.node.user_id = req.user.id
+
+            eform, jscode = self.edit_form(req, create=True)
+
+        return self.render_edit_form(req, eform, jscode)
+
+        return render_to_response('cmsfix:templates/node/edit.mako',
+            {   'parent_url': '%s <%s>' % (node.title, node.path),
+                'node': new_node,
+                'toolbar': '', # new node does not have toolbar yet!
+                'eform': eform,
+                'code': jscode,
+            }, request = request )
 
     def info(self, request=None):
         req = request or self.request
@@ -45,16 +109,145 @@ class NodeViewer(object):
         req = request or self.request
 
 
-    # internal methods
+    # renderer methods
 
     def render(self, request):
         pass
 
-    def edit_form(self, request):
-        pass
+    def render_edit_form(self, request, eform, jscode):
 
-    def parse_form(self, request):
-        pass
+        node = self.node
+
+        return render_to_response(self.template_edit_form,
+            {   'parent_url': ('/' + node.parent.url) if node.parent else 'None',
+                'node': node,
+                'toolbar': self.toolbar(request),
+                'eform': eform,
+                'code': jscode,
+            }, request = request )
+
+
+    def render_content(self, request):
+
+        node = self.node
+        table_body = tbody()
+        for n in node.children:
+            wf = get_workflow(n)
+            table_body.add(
+                tr(
+                    td(literal('<input type="checkbox" name="node-ids" value="%d">' % n.id)),
+                    td(a(n.title or n.slug, href=request.route_url('node-index', path=n.url))),
+                    td(n.id),
+                    td(n.__class__.__name__),
+                    td(n.user.login),
+                    td(str(n.stamp)),
+                    td(n.lastuser.login),
+                    td( span(wf.states[n.state], class_=wf.styles[n.state]) )
+                )
+            )
+
+        content_table = table(class_='table table-condensed table-striped')
+        content_table.add(
+            thead(
+                tr(
+                    th('', style="width:2em;"),
+                    th('Title'),
+                    th('ID'),
+                    th('Node type'),
+                    th('User'),
+                    th('Last modified'),
+                    th('Last user'),
+                    th('State')
+                )
+            ),
+            table_body
+        )
+
+        content_bar = selection_bar('node-ids',
+                    action=request.route_url('node-action', path=node.url))
+        content_table, content_js = content_bar.render(content_table)
+
+        html = row( div(content_table, class_='col-md-10') )
+
+        return render_to_response('cmsfix:templates/node/content.mako',
+                {   'node': node,
+                    'toolbar': self.toolbar(request),
+                    'html': html,
+                    'code': content_js,
+                }, request = request )
+
+
+    # editing methods
+
+    def parse_form(self, f, d=None):
+
+        d = d or dict()
+        d['_stamp_'] = float(f['cmsfix-stamp'])
+        d['slug'] = f.get('cmsfix-slug', None)
+        if 'cmsfix-group_id' in f:
+            d['group_id'] = int(f.get('cmsfix-group_id'))
+        if 'cmsfix-user_id' in f:
+            d['user_id'] = int(f.get('cmsfix-user_id'))
+        if 'publish_time' in f:
+            d['publish_time'] = f.get('cmsfix-publish_time')
+        if 'expire_time' in f:
+            d['expire_time'] = f.get('cmsfix-expire-_time')
+        d['mimetype_id'] = int(f.get('cmsfix-mimetype_id', 0))
+        if 'tags' in f:
+            d['tags'] = f.getall('cmsfix-tags')
+
+        return d
+
+
+    def edit_form(self, request, create=False):
+
+        dbh = get_dbhandler()
+        node = self.node
+
+        eform = form( name='cmsfix/node', method=POST )
+        eform.add(
+
+            fieldset(
+                input_hidden(name='cmsfix-parent_id', value=node.parent_id),
+                #input_hidden(name='cmsfix-user_id', value=request.user.id),
+                input_hidden(name='cmsfix-stamp', value='%15f' % node.stamp.timestamp() if node.stamp else -1),
+                input_text('cmsfix-slug', 'Slug', value=node.slug, offset=1),
+                multi_inputs(name='cmsfix-group-user-type')[
+                input_select('cmsfix-group_id', 'Group', value=node.group_id, offset=1, size=2,
+                    options = [ (g.id, g.name) for g in dbh.get_group() ]),
+                input_select('cmsfix-user_id', 'User', value=node.user_id, offset=1, size=2,
+                    options = [ (u.id, u.login) for u in dbh.get_user(request.user.id).group_users() ]),
+                input_select_ek('cmsfix-mimetype_id', 'MIME type', value=node.mimetype_id,
+                    parent_ek = dbh.get_ekey('@MIMETYPE'), offset=1, size=2),
+                ],
+                name='cmsfix.node-header'
+            ),
+
+            fieldset(name='cmsfix.node-main'),
+
+            fieldset(
+                input_select('cmsfix-tags', 'Tags', offset=1, multiple=True),
+                node_submit_bar(create),
+                name='cmsfix.node-footer'
+            )
+        )
+
+        jscode = '''
+        $("#cmsfix-tags").select2({
+            tags: true,
+            tokenSeparators: [',',' '],
+            minimumInputLength: 3,
+            ajax: {
+                url: "%s",
+                dataType: 'json',
+                data: function(term, page) { return { q: term }; },
+                results: function(data, page) { return { results: data }; }
+            }
+        });
+        
+        ''' % request.route_url('tag-lookup')
+
+        return eform, jscode
 
 
     def breadcrumb(self, request):
@@ -80,6 +273,10 @@ class NodeViewer(object):
     def toolbar(self, request, workflow=None):
 
         n = self.node
+
+        if not n.id:
+            # this is a new node, we don't full provide toolbar
+            return div('Please create and save this node to get full toolbar.')
 
         if not request.user:
             return div('')
@@ -123,7 +320,7 @@ def render_node(node, request):
     pass
 
 
-def render_node_content(node, request):
+def render_node_content_xxx(node, request):
 
     table_body = tbody()
     for n in node.children:
@@ -178,7 +375,7 @@ def node_submit_bar(create=True):
     return custom_submit_bar(('Save', 'save'), ('Save and continue editing', 'save_edit')).set_offset(1)
 
 
-def edit_form(node, request, create=False):
+def edit_form_xxx(node, request, create=False):
 
     dbh = get_dbhandler()
 
@@ -226,7 +423,7 @@ def edit_form(node, request, create=False):
 
 
 
-def parse_form( f, d = None ):
+def parse_form_xxx( f, d = None ):
 
     d = d or dict()
     d['_stamp_'] = float(f['cmsfix-stamp'])
@@ -246,7 +443,7 @@ def parse_form( f, d = None ):
     return d
 
 
-def toolbar(request, n, workflow=None):
+def toolbar_xxx(request, n, workflow=None):
 
     if not request.user:
         return div(breadcrumb(request, n))
@@ -291,7 +488,7 @@ def breadcrumb(request, n):
     leaf = n
     slugs = []
     while leaf:
-        slugs.append( (leaf.title, leaf.path) )
+        slugs.append( (leaf.render_title(), leaf.path) )
         print(leaf)
         leaf = leaf.parent
 

@@ -1,9 +1,7 @@
 
 from cmsfix.models.journalnode import JournalNode, JournalItemNode
 from cmsfix.views import *
-from cmsfix.views.node.node import ( nav, render_node_content, node_submit_bar,
-            edit_form as node_edit_form,
-            parse_form as node_parse_form,
+from cmsfix.views.node.node import ( nav, node_submit_bar,
             breadcrumb, node_info,
             NodeViewer,
 )
@@ -26,8 +24,8 @@ class JournalNodeViewer(NodeViewer):
     def render(self, request):
 
         node = self.node
-        content = div(breadcrumb(request, node), node_info(request, node))
-        content.add(
+        #content = div(breadcrumb(request, node), node_info(request, node))
+        content = div(
             h2(node.title),
         )
 
@@ -64,15 +62,61 @@ class JournalNodeViewer(NodeViewer):
 
         content.add( log_table )
 
-
         return render_to_response('cmsfix:templates/node/generics.mako',
             {
                 'content': content,
+                'toolbar': self.toolbar(request),
             }, request = request)
 
 
+    def edit_form(self, request, create=False):
 
-def index(request, node):
+        dbh = get_dbhandler()
+        n = self.node
+
+        eform, jscode = super().edit_form(request, create)
+        eform.get('cmsfix.node-main').add(
+            input_text('cmsfix-title', 'Title', value=n.title, offset=1),
+            input_textarea('cmsfix-desc', 'Description', value=n.desc, offset=1, size="3x8")
+        )
+
+        return eform, jscode
+
+
+    def parse_form(self, f, d=None):
+
+        d = super().parse_form(f, d)
+        d['title'] = f['cmsfix-title']
+        d['desc'] = f['cmsfix-desc']
+
+        return d
+
+
+    def toolbar_xxx(self, request):
+        """ a much simple toolbar, only has view, edit, delete and publish button """
+
+        n = self.node
+        bar = nav(class_='navbar navbar-default')[
+            div(class_='container-fluid')[
+                div(class_='collapse navbar-collapse')[
+                    ul(class_='nav navbar-nav')[
+                        li(a('View', href=request.route_url('node-view', path=n.url))),
+                        li(a('Edit', href=request.route_url('node-edit', path=n.url))),
+                        #get_add_menu(n, request),
+                    ],
+                    ul(class_='nav navbar-nav navbar-right')[
+                        li(a('Delete')),
+                        li(a('Publish')),
+                    ]
+                ]
+
+            ]
+
+        ]
+        return bar
+
+
+def index_xxx(request, node):
 
     if not request.user:
         return error_page(request, 'Forbidden page!')
@@ -80,7 +124,7 @@ def index(request, node):
     return view(request, node)
 
 
-def view(request, node):
+def view_xxx(request, node):
 
     content = div(breadcrumb(request, node), node_info(request, node))
     content.add(
@@ -127,11 +171,11 @@ def view(request, node):
         }, request = request)
 
 
-def content(request, node):
+def content_xxx(request, node):
     pass
 
 
-def add(request, node):
+def add_xxx(request, node):
 
     if request.method == 'POST':
 
@@ -171,7 +215,7 @@ def add(request, node):
             }, request = request )
 
 
-def edit(request, node):
+def edit_xxx(request, node):
 
     if request.POST:
 
@@ -189,7 +233,7 @@ def edit(request, node):
         }, request = request )
 
 
-def toolbar(request, node):
+def toolbar_xxx(request, node):
     """ a much simple toolbar, only has view, edit, delete and publish button """
 
     bar = nav(class_='navbar navbar-default')[
@@ -214,7 +258,7 @@ def toolbar(request, node):
 
 ## internal functions
 
-def edit_form(node, request, create=False):
+def edit_form_xxx(node, request, create=False):
 
     dbh = get_dbhandler()
 
@@ -227,7 +271,7 @@ def edit_form(node, request, create=False):
     return eform, jscode
 
 
-def parse_form(f, d=None):
+def parse_form_xxx(f, d=None):
 
     d = node_parse_form(f, d)
     d['title'] = f['cmsfix-title']

@@ -1,10 +1,7 @@
 
 from cmsfix.views import *
 from cmsfix.views.node import get_node, get_add_menu
-from cmsfix.views.node.node import ( nav, render_node_content, node_submit_bar,
-            edit_form as node_edit_form,
-            parse_form as node_parse_form,
-            toolbar,
+from cmsfix.views.node.node import ( nav, node_submit_bar,
             NodeViewer,
 )
 from cmsfix.models.pagenode import PageNode
@@ -16,6 +13,9 @@ from rhombus.lib.tags import *
 import docutils.core
 
 class PageNodeViewer(NodeViewer):
+
+    template_edit_form = 'cmsfix:templates/pagenode/edit.mako'
+
 
     def render(self, request):
 
@@ -35,6 +35,44 @@ class PageNodeViewer(NodeViewer):
                 'toolbar': self.toolbar(request),
                 'html': content,
             }, request = request )
+
+
+    def parse_form(self, f, d=None):
+
+        d = super().parse_form(f, d)
+        d['title'] = f['cmsfix-title']
+        d['content'] = f['cmsfix-content']
+        d['summary'] = f['cmsfix-summary']
+
+        return d
+
+
+    def edit_form(self, request, create=False):
+
+        dbh = get_dbhandler()
+        n = self.node
+
+        eform, jscode = super().edit_form(request, create)
+        eform.get('cmsfix.node-main').add(
+            input_text('cmsfix-title', 'Title', value=n.title, offset=1),
+            node_submit_bar(create),
+            input_textarea('cmsfix-content', 'Content', value=n.content, offset=1, size="18x8"),
+            #div(literal(node.content) if node.mimetype == 'text/html' else node.content,
+            #    id='cmsfix-content', name='cmsfix-content'),
+            input_textarea('cmsfix-summary', 'Summary', value=n.summary, offset=1, size='5x8')
+        )
+
+        eform.get('cmsfix-mimetype_id').attrs['onChange'] = 'set_editor(this.value);'
+        jscode += 'var html_mimetype=%d;\n' % dbh.EK.getid('text/html', dbh.session())
+
+        return eform, jscode
+
+
+    def new_node(self):
+
+        n = PageNode()
+        n.mimetype_id = get_dbhandler().get_ekey('text/x-rst').id
+        return n
 
 
 def index(request, node):
