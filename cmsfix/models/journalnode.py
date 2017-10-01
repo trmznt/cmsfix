@@ -5,7 +5,7 @@ from cmsfix.models.filenode import FileNode
 from cmsfix.lib.workflow import set_workflow, get_workflow, GroupwareWorkflow
 
 
-@Node.inherited_container
+@Node.container
 class JournalNode(Node):
     """ this is journal container node """
     __label__ = 'Journal'
@@ -24,6 +24,9 @@ class JournalNode(Node):
 
 
     __mapper_args__ = { 'polymorphic_identity': 3 }
+
+    # JournalNode can not be added by toolbar menu!
+    __strict_container__ = []
 
 
     def update(self, obj):
