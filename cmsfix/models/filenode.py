@@ -1,5 +1,6 @@
 
 from cmsfix.models.node import *
+from cmsfix.lib.workflow import set_workflow, InheritedWorkflow
 
 import io
 
@@ -78,3 +79,6 @@ class FileNode(Node):
     def search_text(self):
         return self.desc
 
+
+file_wf = InheritedWorkflow()
+set_workflow(file_wf, FileNode)

@@ -59,7 +59,8 @@ class BaseWorkflow(object):
 
     def set_defaults(self, node, user, parent_node):
         """ set default parameters for a new node """
-        raise NotImplementedError()
+        node.group_id = parent_node.group_id
+        node.user_id = user.id
 
     def show_menu(self, node, request):
         raise NotImplementedError()
@@ -236,4 +237,23 @@ class SiteWorkflow(object):
         node.listed = True
 
 
+class InheritedWorkflow(BaseWorkflow):
+    """ inherited workflow
+        all permissions are based on the parent node
+    """
 
+    def is_manageable(self, node, user):
+        return get_workflow(node.parent_node).is_manageable(node.parent_node, user)
+
+    def is_editable(self, node, user):
+        return get_workflow(node.parent_node).is_editable(node.parent_node, user)
+
+    def is_accessible(self, node, user):
+        return get_workflow(node.parent_node).is_accessible(node.parent_node, user)
+
+    def set_defaults(self, node, user, parent_node):
+        super().set_defaults(node, user, parent_node)
+
+
+# TODO:
+# * make all workflow classes as singleton
