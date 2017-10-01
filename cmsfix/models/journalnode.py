@@ -7,7 +7,7 @@ from cmsfix.lib.workflow import set_workflow, get_workflow, GroupwareWorkflow
 import time
 
 
-@Node.container
+@Node.inherited_container
 class JournalNode(Node):
     """ this is journal container node """
     __label__ = 'Journal'
@@ -51,6 +51,10 @@ class JournalNode(Node):
 
     def generate_slug(self):
         self.slug = hex(int(time.time()*1e6))[6:]
+
+
+    def render_title(self):
+        return "%s [Journal]" % self.title
 
 
     def set_permission(self, default=True):

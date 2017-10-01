@@ -136,6 +136,10 @@ class Node(BaseMixIn, Base):
         return self.path
 
 
+    def render_title(self):
+        return self.title
+
+
     def is_accessible_XXX(self, user):
         # check if this is public
 
@@ -196,7 +200,7 @@ class Node(BaseMixIn, Base):
     @classmethod
     def get_item_classes(cls):
         global _containers_, _inherited_containers_
-        if hasattr(cls, '__strict_container__'):
+        if hasattr(cls, '__strict_container__') and cls.__strict_container__ != None:
             return cls.__strict_container__
         cls_set = _containers_.get(cls, [])
         for c,l in _inherited_containers_.items():
