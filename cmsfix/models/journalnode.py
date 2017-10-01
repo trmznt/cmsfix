@@ -4,6 +4,8 @@ from cmsfix.models.pagenode import PageNode
 from cmsfix.models.filenode import FileNode
 from cmsfix.lib.workflow import set_workflow, get_workflow, GroupwareWorkflow
 
+import time
+
 
 @Node.container
 class JournalNode(Node):
@@ -47,6 +49,10 @@ class JournalNode(Node):
                 self.flag = obj['flag']
 
 
+    def generate_slug(self):
+        self.slug = hex(int(time.time()*1e6))[6:]
+
+
     def set_permission(self, default=True):
         """ JournalNode default set_permission
                 group: user's primary group
@@ -79,6 +85,11 @@ class JournalItemNode(PageNode):
         if type(obj) == dict:
             if 'log_date' in obj:
                 self.log_date = obj['log_date']
+
+
+    def generate_slug(self):
+        self.slug = hex(int(time.time()*1e6))[6:]
+
 
 class JournalWorkflow(GroupwareWorkflow):
     """ journal workflow
