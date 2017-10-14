@@ -69,7 +69,11 @@ class BaseWorkflow(object):
         raise NotImplementedError()
 
 
-class GroupwareWorkflow(object):
+    def state_style(self, node):
+        return (self.states[node.state], self.styles[node.state])
+
+
+class GroupwareWorkflow(BaseWorkflow):
     """ simple workflow, suitable for intranet
         0 - public - all can access
         1 - protected - only logged user can access
@@ -111,6 +115,7 @@ class GroupwareWorkflow(object):
         """ group: inherit parent group """
         node.group_id = parent_node.group_id
         node.user_id = user.id
+        node.site_id = parent_node.site_id
 
         # all the rest of node types will be in private before being published
         node.state  = 3
