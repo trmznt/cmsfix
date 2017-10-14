@@ -32,8 +32,9 @@ class PageNodeViewer(NodeViewer):
 
         return render_to_response('cmsfix:templates/pagenode/node.mako',
             {   'node': node,
-                'toolbar': self.toolbar(request),
+                'breadcrumb': self.breadcrumb(request),
                 'html': content,
+                'stickybar': self.statusbar(request),
             }, request = request )
 
 
@@ -55,7 +56,6 @@ class PageNodeViewer(NodeViewer):
         eform, jscode = super().edit_form(request, create)
         eform.get('cmsfix.node-main').add(
             input_text('cmsfix-title', 'Title', value=n.title, offset=1),
-            node_submit_bar(create),
             input_textarea('cmsfix-content', 'Content', value=n.content, offset=1, size="18x8"),
             #div(literal(node.content) if node.mimetype == 'text/html' else node.content,
             #    id='cmsfix-content', name='cmsfix-content'),
@@ -66,6 +66,16 @@ class PageNodeViewer(NodeViewer):
         jscode += 'var html_mimetype=%d;\n' % dbh.EK.getid('text/html', dbh.session())
 
         return eform, jscode
+
+
+    def editingbar(self, request):
+
+        bar = super().editingbar(request)
+        bar.get('cmsfix.editingbar.left').add(
+            li(a(span('Preview', class_='btn btn-primary navbar-btn'),
+                            onclick=literal(r"alert('Not implemented yet');"))),
+        )
+        return bar
 
 
     def new_node(self):
