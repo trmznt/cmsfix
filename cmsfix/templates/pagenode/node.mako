@@ -1,6 +1,6 @@
 <%inherit file="rhombus:templates/base.mako" />
 
-${toolbar}
+${breadcrumb}
 
 ${html}
 

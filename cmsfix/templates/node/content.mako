@@ -1,6 +1,6 @@
 <%inherit file="cmsfix:templates/base.mako" />
 
-${toolbar}
+${breadcrumb}
 
 <h2>Node Content</h2>
 

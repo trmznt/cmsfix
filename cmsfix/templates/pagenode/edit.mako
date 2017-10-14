@@ -1,8 +1,6 @@
 <%inherit file="rhombus:templates/base.mako" />
 
-${toolbar}
-
-<p>Parent url: ${parent_url or ''}</p>
+${breadcrumb}
 
 ${eform}
 
