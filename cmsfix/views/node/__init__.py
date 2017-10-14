@@ -66,6 +66,9 @@ def info(request):
     if not wf.is_manageable(n, request.user):
         return error_page(request, 'You are not authorized to view this node meta information')
 
+    viewer = get_viewer(n.__class__)
+    return viewer(n, request).info()
+
     module = get_module(n.__class__)
     toolbar = module.toolbar(request, n)
 
