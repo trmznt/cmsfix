@@ -86,24 +86,19 @@ class NodeViewer(object):
             # create a dummy instance just for the purpose of showing edit form
             self.node = self.new_node()
             get_workflow(self.node).set_defaults(self.node, req.user, parent_node)
+            # temporarily assigning parent for breadcrumb purposes
             #self.node.parent_id = parent_node.id
             #self.node.site = parent_node.site
             #self.node.user_id = req.user.id
 
             eform, jscode = self.edit_form(req, create=True)
 
-        return self.render_edit_form(req, eform, jscode)
+        return self.render_edit_form(req, eform, jscode, parent_node)
 
-        return render_to_response('cmsfix:templates/node/edit.mako',
-            {   'parent_url': '%s <%s>' % (node.title, node.path),
-                'node': new_node,
-                'toolbar': '', # new node does not have toolbar yet!
-                'eform': eform,
-                'code': jscode,
-            }, request = request )
 
     def info(self, request=None):
         req = request or self.request
+        return self.render_info(req)
 
     def action(self, request=None):
         req = request or self.request
@@ -114,14 +109,15 @@ class NodeViewer(object):
     def render(self, request):
         pass
 
-    def render_edit_form(self, request, eform, jscode):
+    def render_edit_form(self, request, eform, jscode, parent_node=None):
 
         node = self.node
 
         return render_to_response(self.template_edit_form,
             {   'parent_url': ('/' + node.parent.url) if node.parent else 'None',
                 'node': node,
-                'toolbar': self.toolbar(request),
+                'breadcrumb': self.breadcrumb(request, parent_node) if parent_node else self.breadcrumb(request),
+                'stickybar': self.editingbar(request),
                 'eform': eform,
                 'code': jscode,
             }, request = request )
@@ -171,9 +167,26 @@ class NodeViewer(object):
 
         return render_to_response('cmsfix:templates/node/content.mako',
                 {   'node': node,
-                    'toolbar': self.toolbar(request),
+                    'breadcrumb': self.breadcrumb(request),
                     'html': html,
+                    'stickybar': self.statusbar(request),
                     'code': content_js,
+                }, request = request )
+
+
+    def render_info(self, request):
+
+        n = self.node
+
+        html = div()
+        html.add( p('Creator: %s' % n.user.login) )
+        html.add( p('Group: %s' % n.group.name) )
+
+        return render_to_response('cmsfix:templates/node/info.mako',
+                {   'node': n,
+                    'breadcrumb': self.breadcrumb(request),
+                    'stickybar': self.statusbar(request),
+                    'html': html,
                 }, request = request )
 
 
@@ -227,7 +240,7 @@ class NodeViewer(object):
 
             fieldset(
                 input_select('cmsfix-tags', 'Tags', offset=1, multiple=True),
-                node_submit_bar(create),
+                node_submit_bar(create).set_hide(True),
                 name='cmsfix.node-footer'
             )
         )
@@ -256,6 +269,26 @@ class NodeViewer(object):
         slugs = []
         while leaf:
             slugs.append( (leaf.title, leaf.path) )
+            leaf = leaf.parent
+
+        slugs = reversed(slugs)
+
+        # use bootstrap's breadcrumb
+        html = div(ol(class_='breadcrumb'))
+        for (title, url) in slugs:
+            html.add(
+                li(a(title, href=url))
+            )
+
+        return html
+
+    def breadcrumb(self, request, node=None):
+
+        leaf = node or self.node
+        slugs = []
+        while leaf:
+            slugs.append( (leaf.render_title(), leaf.path) )
+            print(leaf)
             leaf = leaf.parent
 
         slugs = reversed(slugs)
@@ -308,6 +341,86 @@ class NodeViewer(object):
         ]
 
         return div(breadcrumb(request, n), node_info(request, n), bar)
+
+
+    def statusbar(self, request, workflow=None):
+
+        if not request.user:
+            return ''
+
+        n = self.node
+        wf = workflow or get_workflow(n)
+
+        if not wf.is_manageable(n, request.user):
+            bar = div(class_='collapse navbar-collapse')[
+                    ul(name='cmsfix.statusbar.left', class_='nav navbar-nav')[
+                        li(a('[Node ID: %d]' % n.id)),
+                    ]
+                ]
+
+        else:
+            bar = div(class_='collapse navbar-collapse dropup')[
+                    ul(name='cmsfix.statusbar.left', class_='nav navbar-nav')[
+                        li(a('[Node ID: %d]' % n.id)),
+                        li(a('View', href=request.route_url('node-view', path=n.url))),
+                        li(a('Edit', href=request.route_url('node-edit', path=n.url))),
+                        li(a('Content', href=request.route_url('node-content', path=n.url))),
+                        li(a('Info', href=request.route_url('node-info', path=n.url))),
+                        get_add_menu(n, request),
+                    ],
+                    ul(class_='nav navbar-nav navbar-right')[
+                        li(a('Delete')),
+                        wf.show_menu(n, request)
+                    ]
+                ]
+
+        return nav(class_='navbar navbar-default')[
+            div(class_='container-fluid')[
+                bar
+            ]
+        ]
+
+
+    def editingbar(self, request, workflow=None):
+
+        n = self.node
+        wf = workflow or get_workflow(n)
+
+        if not wf.is_editable(n, request.user):
+            bar = div(class_='collapse navbar-collapse')[
+                    ul(name='cmsfix.editingbar.left', class_='nav navbar-nav')[
+                        li('[Node ID: %d]' % n.id if n.id else '[Node ID: Undefined]'),
+                    ],
+                    ul(name='cmsfix.editingbar.right', class_='nav navbar-nav navbar-right')
+                ]
+
+        else:
+            labels = self.submit_bar_text()
+            bar = div(class_='collapse navbar-collapse dropup')[
+                    ul(name='cmsfix.editingbar.left', class_='nav navbar-nav')[
+                        li(a('[Node ID: %d]' % n.id) if n.id else a('[Node ID: Undefined]')),
+                        li(a(span(labels[0], class_='btn btn-primary navbar-btn'),
+                                onclick=literal(r"$('#_method\\.save').click();"))),
+                        li(a(span(labels[1], class_='btn btn-primary navbar-btn'),
+                                onclick=literal(r"$('#_method\\.save_edit').click();"))),
+                    ],
+                    ul(name='cmsfix.editingbar.right', class_='nav navbar-nav navbar-right')[
+                        li(a(span('Cancel', class_='btn btn-primary navbar-btn'),
+                                onclick=literal("alert('Not implemented yet');"))),
+                    ]
+                ]
+
+        return nav(class_='navbar navbar-default')[
+            div(class_='container-fluid')[
+                bar
+            ]
+        ]
+
+
+    def submit_bar_text(self):
+        if not self.node.id:
+            return ('Create', 'Create and continue editing')
+        return ('Save', 'Save and continue editing')
 
 
 def index(request, node):
@@ -371,7 +484,7 @@ def render_node_content_xxx(node, request):
 
 def node_submit_bar(create=True):
     if create:
-        return custom_submit_bar(('Create', 'create'), ('Create and continue editing', 'create_edit')).set_offset(1)
+        return custom_submit_bar(('Create', 'save'), ('Create and continue editing', 'save_edit')).set_offset(1)
     return custom_submit_bar(('Save', 'save'), ('Save and continue editing', 'save_edit')).set_offset(1)
 
 
