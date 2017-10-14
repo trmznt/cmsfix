@@ -95,9 +95,12 @@
 
     <br><br><br>
 
+% if stickybar:
     <footer class="sticky">
-    Test
+    ${stickybar}
     </footer>
+% endif
+
 
 ${self.scriptlinks()}
 
