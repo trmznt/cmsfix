@@ -39,11 +39,12 @@ class JournalNodeViewer(NodeViewer):
 
         tbl_body = tbody()
         for n in node.children:
+            wf = get_workflow(n)
             tbl_body.add(
                 tr(
                     td(a(str(n.log_date), href=request.route_url('node-index', path=n.url))),
                     td(str(n.create_time)),
-                    td('draft'),
+                    td(span(wf.states[n.state], class_=wf.styles[n.state])),
                     td(n.title)
                 )
             )
@@ -65,7 +66,7 @@ class JournalNodeViewer(NodeViewer):
         return render_to_response('cmsfix:templates/node/generics.mako',
             {
                 'content': content,
-                'toolbar': self.toolbar(request),
+                'stickybar': self.statusbar(request),
             }, request = request)
 
 

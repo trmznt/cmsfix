@@ -17,8 +17,7 @@ class JournalItemNodeViewer(PageNodeViewer):
         n = self.node
 
         content = div()[
-            #div( breadcrumb(request, node.parent) ),
-            self.toolbar(request),
+            self.breadcrumb(request),
             h3('Log date: %s | Title: %s' % (n.log_date, n.title) ),
 
         ]
@@ -32,7 +31,8 @@ class JournalItemNodeViewer(PageNodeViewer):
         content.add( html )
 
         return render_to_response('cmsfix:templates/node/generics.mako',
-                { 'content': content,
+                {   'content': content,
+                    'stickybar': self.statusbar(request),
                 }, request = request )
 
 
@@ -63,14 +63,13 @@ class JournalItemNodeViewer(PageNodeViewer):
 
             fieldset(
                 input_text('cmsfix-title', 'Title', value=n.title, offset=1),
-                node_submit_bar(create),
                 input_textarea('cmsfix-content', 'Content', value=n.content, offset=1, size="18x8"),
                 input_textarea('cmsfix-summary', 'Summary', value=n.summary, offset=1, size="3x8"),
                 name='cmsfix.node-main'),
 
             fieldset(
                 input_select('cmsfix-tags', 'Tags', offset=1, multiple=True),
-                node_submit_bar(create),
+                node_submit_bar(create).set_hide(True),
                 name='cmsfix.node-footer'
             )
         )
@@ -98,6 +97,17 @@ class JournalItemNodeViewer(PageNodeViewer):
         if 'cmsfix-log_date' in f:
             d['log_date'] = parse_date(f['cmsfix-log_date'], dayfirst=False)
         return d
+
+
+    def statusbar(self, request):
+
+        bar = super().statusbar(request)
+        states, styles = get_workflow(self.node).state_style(self.node)
+        if states == 'sealed':
+            bar.get('cmsfix.statusbar.left').add(
+                li(a('This record has been sealed and cannot be edited anymore')),
+                )
+        return bar
 
 
 def index(request, node):
