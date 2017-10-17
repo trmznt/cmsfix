@@ -7,7 +7,7 @@ from cmsfix.lib.whoosh import get_index_service, SearchScheme
 from whoosh.qparser import QueryParser
 
 def index(request):
-    """ return a basic form if no """
+    """ return a basic form if no params """
 
     if 'q' in request.params:
 
