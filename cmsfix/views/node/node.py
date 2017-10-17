@@ -3,6 +3,7 @@
 
 from rhombus.lib.tags import *
 from rhombus.views import *
+from rhombus.lib.utils import random_string
 
 from cmsfix.lib.workflow import get_workflow
 from cmsfix.views import *
@@ -15,6 +16,7 @@ from pyramid.renderers import render_to_response
 class NodeViewer(object):
 
     template_edit_form = 'cmsfix:templates/node/edit.mako'
+    next_route_name = 'node-index'
 
 
     def __init__(self, node, request):
@@ -48,7 +50,7 @@ class NodeViewer(object):
                 return HTTPFound(location = req.route_url('node-edit', path=n.url))
 
             print(n.url)
-            return HTTPFound(location = req.route_url('node-index', path=n.url))
+            return HTTPFound(location = req.route_url(self.next_route_name, path=n.url))
 
         eform, jscode = self.edit_form(req)
 
@@ -66,6 +68,8 @@ class NodeViewer(object):
 
         if req.method == 'POST':
 
+            self.pre_save_node(request)
+
             n = self.new_node()
             get_workflow(n).set_defaults(n, req.user, parent_node)
             n.update(self.parse_form(req.params))
@@ -75,10 +79,12 @@ class NodeViewer(object):
             get_dbhandler().session().flush()
             n.ordering = 19 * n.id
 
+            self.post_save_node(request)
+
             if req.params['_method'].endswith('_edit'):
                 return HTTPFound(location = req.route_url('node-edit', path=n.url))
 
-            return HTTPFound(location = req.route_url('node-index', path=n.url))
+            return HTTPFound(location = req.route_url(self.next_route_name, path=n.url))
 
         dbh = get_dbhandler()
         with dbh.session().no_autoflush:
@@ -224,6 +230,7 @@ class NodeViewer(object):
                 input_hidden(name='cmsfix-parent_id', value=node.parent_id),
                 #input_hidden(name='cmsfix-user_id', value=request.user.id),
                 input_hidden(name='cmsfix-stamp', value='%15f' % node.stamp.timestamp() if node.stamp else -1),
+                input_hidden(name='cmsfix-sesskey', value=generate_sesskey(request.user.id, node.id)),
                 input_text('cmsfix-slug', 'Slug', value=node.slug, offset=1),
                 multi_inputs(name='cmsfix-group-user-type')[
                 input_select('cmsfix-group_id', 'Group', value=node.group_id, offset=1, size=2,
@@ -261,6 +268,13 @@ class NodeViewer(object):
         ''' % request.route_url('tag-lookup')
 
         return eform, jscode
+
+
+    def pre_save_node(self, request):
+        pass
+
+    def post_save_node(self, request):
+        pass
 
 
     def breadcrumb(self, request):
@@ -421,6 +435,15 @@ class NodeViewer(object):
         if not self.node.id:
             return ('Create', 'Create and continue editing')
         return ('Save', 'Save and continue editing')
+
+
+def generate_sesskey(user_id, node_id=None):
+    if node_id:
+        node_id_part = '%08x' % node_id
+    else:
+        node_id_part = 'XXXXXXXX'
+
+    return '%08x%s%s' % (user_id, random_string(8), node_id_part)
 
 
 def index(request, node):
