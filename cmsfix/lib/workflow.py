@@ -248,13 +248,13 @@ class InheritedWorkflow(BaseWorkflow):
     """
 
     def is_manageable(self, node, user):
-        return get_workflow(node.parent_node).is_manageable(node.parent_node, user)
+        return get_workflow(node.parent).is_manageable(node.parent, user)
 
     def is_editable(self, node, user):
-        return get_workflow(node.parent_node).is_editable(node.parent_node, user)
+        return get_workflow(node.parent).is_editable(node.parent, user)
 
     def is_accessible(self, node, user):
-        return get_workflow(node.parent_node).is_accessible(node.parent_node, user)
+        return get_workflow(node.parent).is_accessible(node.parent, user)
 
     def set_defaults(self, node, user, parent_node):
         super().set_defaults(node, user, parent_node)
