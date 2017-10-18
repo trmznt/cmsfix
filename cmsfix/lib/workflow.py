@@ -247,6 +247,9 @@ class InheritedWorkflow(BaseWorkflow):
         all permissions are based on the parent node
     """
 
+    states = { 0: 'Not Applicable' }
+    styles = { 0: 'label label-info'}
+
     def is_manageable(self, node, user):
         return get_workflow(node.parent).is_manageable(node.parent, user)
 
