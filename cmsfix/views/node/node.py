@@ -15,7 +15,8 @@ from pyramid.renderers import render_to_response
 
 class NodeViewer(object):
 
-    template_edit_form = 'cmsfix:templates/node/edit.mako'
+    template_edit = 'cmsfix:templates/node/edit.mako'
+    template_view = 'cmsfix:templates/node/node.mako'
     next_route_name = 'node-index'
 
 
@@ -68,9 +69,9 @@ class NodeViewer(object):
 
         if req.method == 'POST':
 
-            self.pre_save_node(request)
+            self.pre_save_node(req)
 
-            n = self.new_node()
+            n = self.node = self.new_node()
             get_workflow(n).set_defaults(n, req.user, parent_node)
             n.update(self.parse_form(req.params))
             if not n.slug:
@@ -79,7 +80,7 @@ class NodeViewer(object):
             get_dbhandler().session().flush()
             n.ordering = 19 * n.id
 
-            self.post_save_node(request)
+            self.post_save_node(req)
 
             if req.params['_method'].endswith('_edit'):
                 return HTTPFound(location = req.route_url('node-edit', path=n.url))
@@ -119,7 +120,7 @@ class NodeViewer(object):
 
         node = self.node
 
-        return render_to_response(self.template_edit_form,
+        return render_to_response(self.template_edit,
             {   'parent_url': ('/' + node.parent.url) if node.parent else 'None',
                 'node': node,
                 'breadcrumb': self.breadcrumb(request, parent_node) if parent_node else self.breadcrumb(request),
