@@ -6,7 +6,7 @@ from cmsfix.views.node.node import ( nav, node_submit_bar,
 )
 from cmsfix.models.pagenode import PageNode
 from cmsfix.lib.workflow import get_workflow
-from cmsfix.lib.macro import postrender
+from cmsfix.lib import macro
 from rhombus.lib.utils import get_dbhandler, cerr, cout
 from rhombus.lib.tags import *
 
@@ -14,8 +14,8 @@ import docutils.core
 
 class PageNodeViewer(NodeViewer):
 
-    template_edit_form = 'cmsfix:templates/pagenode/edit.mako'
-
+    template_edit = 'cmsfix:templates/pagenode/edit.mako'
+    template_view = 'cmsfix:templates/pagenode/node.mako'
 
     def render(self, request):
 
@@ -24,17 +24,18 @@ class PageNodeViewer(NodeViewer):
         # set the formatter
         if node.mimetype == 'text/x-rst':
             content = literal(render_rst(node.content))
-            content = literal(postrender(content, node))
+            content = literal(macro.postrender(content, node))
         elif node.mimetype == 'text/html':
             content = literal(node.content)
         else:
             content = node.content
 
-        return render_to_response('cmsfix:templates/pagenode/node.mako',
+        return render_to_response(self.template_view,
             {   'node': node,
                 'breadcrumb': self.breadcrumb(request),
                 'html': content,
                 'stickybar': self.statusbar(request),
+                'macro': macro,
             }, request = request )
 
 
