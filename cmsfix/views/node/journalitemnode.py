@@ -7,33 +7,13 @@ from cmsfix.lib.workflow import get_workflow
 from dateutil.parser import parse as parse_date
 from cmsfix.lib.macro import postrender
 
+
 import time, datetime
 
 
 class JournalItemNodeViewer(PageNodeViewer):
 
-    def render(self, request):
-
-        n = self.node
-
-        content = div()[
-            self.breadcrumb(request),
-            h3('Log date: %s | Title: %s' % (n.log_date, n.title) ),
-
-        ]
-
-        if n.mimetype == 'text/x-rst':
-            html = literal(render_rst(n.content))
-            html = literal(postrender(html, n))
-        else:
-            html = n.content
-
-        content.add( html )
-
-        return render_to_response('cmsfix:templates/node/generics.mako',
-                {   'content': content,
-                    'stickybar': self.statusbar(request),
-                }, request = request )
+    template_view = 'cmsfix:/templates/journalitemnode/node.mako'
 
 
     def new_node(self):
