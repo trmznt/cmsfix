@@ -38,7 +38,7 @@ def node_link(text, dbh):
 
     node = dbh.get_node_by_id(int(text[3:]))
 
-    return literal('<a href="%s">%s</a>' % (node.url, node.title))
+    return literal('<a href="/%s">%s</a>' % (node.url, node.title))
 
 
 def run_macro(text, node, dbh):
