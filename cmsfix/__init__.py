@@ -1,4 +1,5 @@
 from pyramid.config import Configurator
+from pyramid.events import subscriber, BeforeRender
 from rhombus import init_app
 from rhombus.lib.utils import cerr, cout, cexit, get_dbhandler
 from rhombus.models.core import set_func_userid
@@ -20,7 +21,7 @@ from cmsfix.views.node import filenode as filenode_mod
 from cmsfix.views.node import commentnode as commentnode_mod
 from cmsfix.lib.workflow import set_workflow, GroupwareWorkflow
 from cmsfix.lib.whoosh import IndexService, set_index_service
-
+from cmsfix.lib import macro
 
 def includeme( config ):
     """ this configuration must be included as last order
@@ -95,6 +96,11 @@ def includeme( config ):
 
 def get_userid_func():
     return get_dbhandler().session().user.id
+
+
+@subscriber(BeforeRender)
+def add_globals(ev):
+    ev['macro'] = macro
 
 
 def main_xxx(global_config, **settings):
