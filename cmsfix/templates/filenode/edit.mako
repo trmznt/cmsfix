@@ -1,13 +1,11 @@
-<%inherit file="rhombus:templates/base.mako" />
+<%inherit file="cmsfix:templates/base.mako" />
 
 <!-- global progressbar -->
 <div id='fileprogress' class='progress progressbar-container' style='display:none'>
   <div class='progress-bar progress-bar-success'></div>
 </div>
 
-${toolbar}
-
-<p>Parent url: ${parent_url or ''}</p>
+${breadcrumb}
 
 ${eform}
 
