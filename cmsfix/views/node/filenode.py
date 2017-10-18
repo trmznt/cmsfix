@@ -14,6 +14,8 @@ import os.path, mimetypes
 
 class FileNodeViewer(NodeViewer):
 
+    template_edit_form = 'cmsfix:templates/filenode/edit.mako'
+
     def render(self, request):
 
         if self.node.pathname:
@@ -25,6 +27,113 @@ class FileNodeViewer(NodeViewer):
 
         raise NotImplementedError()
 
+
+    def new_node(self):
+        n = FileNode()
+        n.pathname = ''
+        n.data = b''
+        return n
+
+
+    def edit_form(self, request, create=False):
+
+        node = self.node
+
+        eform, jscode = super().edit_form(request, create)
+        eform.get('cmsfix.node-main').add(
+            input_textarea('cmsfix-desc', 'Description', value=node.desc, offset=1, size="2x8" ),
+            input_hidden('cmsfix-filename', value='')
+        )
+
+        eform = div(
+            div(class_='row')[
+                div(class_='col-md-2 col-md-offset-1')[
+                    span(class_="btn btn-success fileinput-button")[
+                        span('Select file to upload/change'),
+                        inputtag(id='upload', type='file', name='files[]'),
+                    ]
+                ]
+            ],
+            div(class_='row')[
+                div(class_='col-md-8 col-md-offset-1')[
+                    table(class_='table table-condensed')[
+                        tr(
+                            td('Original filename'),
+                            td(node.filename if node.id else '-', id="cmsfix-basename")
+                        ),
+                        tr(
+                            td('File size'),
+                            td(node.size if node.id else '-', id="cmsfix-size")
+                        ),
+                    ]
+                ]
+            ],
+            eform
+        )
+
+        jscode = jscode + '''
+        'use strict';
+
+        $('#upload').fileupload({
+            url: '%(parent_url)s',
+            dataType: 'json',
+            maxChunkSize: 1000000,
+            done: function (e, data) {
+                $('#cmsfix-slug').val( data.result.basename );
+                $('#cmsfix-basename').text( data.result.basename );
+                $('#cmsfix-size').text( data.result.size );
+                $('#cmsfix-filename').val( data.result.basename )
+                $('#cmsfix-mimetype_id').val( data.result.mimetype_id );
+            },
+            progressall: function (e, data) {
+                var progress = parseInt(data.loaded / data.total * 100, 10);
+                $('#fileprogress .progress-bar').css('width', progress + '%%');
+            },
+            start: function (e) {
+                $('#fileprogress .progress-bar').css('width','0%%');
+                $('#fileprogress').show();
+            },
+            stop: function(e) {
+                $('#fileprogress').hide();
+            }
+        }).prop('disabled', !$.support.fileInput)
+            .parent().addClass($.support.fileInput ? undefined : 'disabled');
+        ''' 
+
+        sesskey = eform.get('cmsfix-sesskey').value
+        return eform, jscode % dict( parent_url = request.route_url("filenode-upload", sesskey=sesskey) )
+
+
+    def parse_form(self, f, d=None):
+
+        d = super().parse_form(f, d)
+        d['filename'] = f['cmsfix-filename']
+        d['desc'] = f['cmsfix-desc']
+
+        return d
+
+    def pre_save_node(self, request):
+
+        sesskey = request.POST.get('cmsfix-sesskey')
+
+        # sanity and authorization check
+        user_id, _ = tokenize_sesskey(sesskey)
+        if user_id != request.user.id:
+            raise RuntimeError('Invalid session key!')
+
+
+    def post_save_node(self, request):
+
+        n = self.node
+        sesskey = request.POST.get('cmsfix-sesskey')
+
+        tmp_dir = request.registry.settings['cmsfix.tmpdir']
+        dest_path = tmp_dir + '%s.payload' % sesskey
+
+        with open(dest_path, 'rb') as f:
+            n.write( f )
+
+        os.unlink( dest_path)
 
 
 # exposable functions
