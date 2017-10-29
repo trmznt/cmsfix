@@ -227,11 +227,9 @@ class NodeViewer(object):
         eform = form( name='cmsfix/node', method=POST )
         eform.add(
 
+            self.hidden_fields( request, node ),
+            
             fieldset(
-                input_hidden(name='cmsfix-parent_id', value=node.parent_id),
-                #input_hidden(name='cmsfix-user_id', value=request.user.id),
-                input_hidden(name='cmsfix-stamp', value='%15f' % node.stamp.timestamp() if node.stamp else -1),
-                input_hidden(name='cmsfix-sesskey', value=generate_sesskey(request.user.id, node.id)),
                 input_text('cmsfix-slug', 'Slug', value=node.slug, offset=1),
                 multi_inputs(name='cmsfix-group-user-type')[
                 input_select('cmsfix-group_id', 'Group', value=node.group_id, offset=1, size=2,
@@ -276,6 +274,15 @@ class NodeViewer(object):
 
     def post_save_node(self, request):
         pass
+
+    def hidden_fields(self, request, node=None):
+        node = node or self.node
+        return fieldset (
+            input_hidden(name='cmsfix-parent_id', value=node.parent_id),
+            input_hidden(name='cmsfix-stamp', value='%15f' % node.stamp.timestamp() if node.stamp else -1),
+            input_hidden(name='cmsfix-sesskey', value=generate_sesskey(request.user.id, node.id)),
+            name="cmsfix.node-hidden"
+        )
 
 
     def breadcrumb(self, request):
