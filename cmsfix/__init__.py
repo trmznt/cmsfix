@@ -45,6 +45,12 @@ def includeme( config ):
     config.add_route('search', '/search')
     config.add_view('cmsfix.views.search.index', route_name='search')
 
+    config.add_route('docs', '/dashboard/docs/{path:.*}')
+    config.add_view('cmsfix.views.dashboard.docs', route_name='docs')
+
+    config.add_route('dashboard', '/dashboard')
+    config.add_view('cmsfix.views.dashboard.index', route_name='dashboard')
+
     config.add_route('tag-lookup', '/tag-lookup')
     config.add_view('cmsfix.views.node.tag_lookup', route_name='tag-lookup', renderer='json')
 
