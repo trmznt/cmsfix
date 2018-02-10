@@ -23,7 +23,8 @@ set_config( environ='CMSFIX_CONFIG',
             paths = ['cmsfix.scripts.'],
             greet = greet,
             usage = usage,
-            dbhandler_class = DBHandler
+            dbhandler_class = DBHandler,
+            includes = [ 'cmsfix.includes' ]
 )
 
 main = rhombus_main
