@@ -125,8 +125,9 @@ def main_xxx(global_config, **settings):
 
 def main(global_config, **settings):
     cerr('CMSFix main() is running...')
-    config = init_app(global_config, settings, prefix='/mgr')
-    config.include(includeme)
+    config = init_app(global_config, settings, prefix='/mgr'
+                        , include = includeme, include_tags = [ 'cmsfix.includes' ])
+
     set_workflow(GroupwareWorkflow())
 
     return config.make_wsgi_app()
