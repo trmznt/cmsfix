@@ -129,6 +129,7 @@ ${self.scriptlinks()}
 ##
 ##
 <%def name='flash_msg()'>
+<!-- flash message container -->
 % if request.session.peek_flash():
 
   % for msg_type, msg_text in request.session.pop_flash():
