@@ -1,10 +1,11 @@
 
-
+from cmsfix.lib.roles import EDITOR, REVIEWER
 
 def setup( dbh ):
 
     # insert EnumKey's CMSFix specifics
     dbh.EK.bulk_insert( ek_initlist, dbsession = dbh.session() )
+    dbh.Group.bulk_insert( essential_groups, dbsession = dbh.session() )
 
 
     # create default group: default and domain: '*'
@@ -33,7 +34,18 @@ ek_initlist = [
             ( 'CMSFix', 'CMSFix' ),
         ]
     ),
+    (   '@ROLES', None,
+        [
+            (EDITOR, 'editor role'),
+            (REVIEWER, 'reviewer role'),
+        ]
+    ),
     (   '@TAG', 'Tag container',
         [],
         ),
+]
+
+essential_groups = [
+            ( '_Editor_', [ EDITOR ]),
+            ( '_Reviewer_', [ REVIEWER ]),
 ]

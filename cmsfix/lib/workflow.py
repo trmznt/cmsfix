@@ -1,7 +1,7 @@
 
 # workflow
 
-from rhombus.lib.roles import SYSADM, DATAADM
+from cmsfix.lib.roles import SYSADM, DATAADM, EDITOR, REVIEWER
 from rhombus.lib.tags import ul, li, a, span
 
 
@@ -71,6 +71,42 @@ class BaseWorkflow(object):
 
     def state_style(self, node):
         return (self.states[node.state], self.styles[node.state])
+
+
+    # menu-related methods
+
+    def show_menu(self, node, request):
+        """ based on user authorization, show workflow menu; return a <li> element """
+        html = li(class_='dropdown')
+        html.add(
+            a(span(self.states[node.state], class_=self.styles[node.state]), span(class_='caret'), href="#", class_='dropdown-toggle',
+            **{ "data-toggle": "dropdown", "role": "button", "aria-haspopup": "true",
+                "aria-expanded": "false"})
+        )
+        html.add(
+            ul(class_='dropdown-menu')[
+                tuple(
+                    li(
+                        a(self.states[i],
+                            href=request.route_url('node-action', path=node.url,
+                                        _query = { '_method': 'set-state', 'state': i })) )
+                    for i in sorted(self.states.keys(), reverse=True)
+                )
+            ]
+        )
+        return html
+
+
+    def process_menu(self, node, request):
+        """ process request """
+
+        state = int(request.params.get('state', 3))
+        node.state = state
+
+        from rhombus.lib.utils import get_dbhandler
+        dbsession = get_dbhandler().session()
+        assert dbsession.user, "Fatal Error: user not properly set up"
+        assert dbsession.user.id == request.user.id, "Fatal Error: inconsistent user id in db session"
 
 
 class GroupwareWorkflow(BaseWorkflow):
@@ -157,7 +193,7 @@ class GroupwareWorkflow(BaseWorkflow):
         assert dbsession.user.id == request.user.id, "Fatal Error: inconsistent user id in db session"
 
 
-class PublicWorkflow(object):
+class PublicWorkflow(BaseWorkflow):
     """ workflow with reviews, suitable for publishing public articles
         0 - public: all
         1 - restricted: only logged user can view
@@ -166,6 +202,10 @@ class PublicWorkflow(object):
         4 - author stage: only author can view & edit
     """
 
+    states = { 0: 'public', 1: 'restricted', 2: 'editor', 3: 'reviewer', 4: 'draft' }
+    styles = {  0: 'label label-success', 1: 'label label-info', 2: 'label label-info',
+                3: 'label label-warning', 4: 'label label-danger '}
+
     def __init__(self):
         pass
 
@@ -173,23 +213,36 @@ class PublicWorkflow(object):
     def is_manageable(self, node, user):
         if not user:
             return False
-        if node.user_id == user.id:
+        if user.has_roles(SYSADM, DATAADM):
             return True
-        if node.state <= 1 and self.is_editor(user):
+        if node.state == 4 and node.user_id == user.id:
+            return True
+        if node.state == 2 and user.has_roles(EDITOR):
             return True
         return False
 
     def is_editable(self, node, user):
+        return self.is_manageable(node, user)
         if not user:
             return False
-        if node.state == 2 and node.user_id == user.id:
+        if node.state == 4 and node.user_id == user.id:
             return True
-        if node.state <= 1 and self.is_editor(user):
+        if node.state == 2 and user.has_roles(EDITOR):
             return True
         return False
 
     def is_accessible(self, node, user):
         if node.state == 0:
+            return True
+        if not user:
+            return False
+        if node.user_id == user.id:
+            return True
+        if node.state == 1 and user:
+            return True
+        if node.state == 2 and user.has_roles(EDITOR):
+            return True
+        if node.state == 3 and user.has_roles(EDITOR, REVIEWER):
             return True
         return self.is_manageable(node, user)
 
@@ -197,6 +250,8 @@ class PublicWorkflow(object):
         """ group: inherit parent group """
         node.group_id = parent_node.group_id
         node.user_id = user.id
+
+        from cmsfix.models.commentnode import CommentNode
 
         if isinstance(node, CommentNode):
             # comments are directly publishable and won't appear in Content tab
