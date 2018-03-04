@@ -23,6 +23,8 @@ from cmsfix.lib.workflow import set_workflow, GroupwareWorkflow
 from cmsfix.lib.whoosh import IndexService, set_index_service
 from cmsfix.lib import macro
 
+import importlib
+
 def includeme( config ):
     """ this configuration must be included as last order
     """
@@ -99,6 +101,14 @@ def includeme( config ):
     # set index service
     set_index_service(IndexService(config.registry.settings['cmsfix.whoosh.path']))
 
+    # set workflow
+    workflow_module, workflow_class = config.registry.settings.get('cmsfix.workflow',
+        'cmsfix.lib.workflow.GroupwareWorkflow').rsplit('.', 1)
+    M = importlib.import_module(workflow_module)
+    W = getattr(M, workflow_class)
+    set_workflow(W())
+
+
 
 def get_userid_func():
     return get_dbhandler().session().user.id
@@ -127,7 +137,5 @@ def main(global_config, **settings):
     cerr('CMSFix main() is running...')
     config = init_app(global_config, settings, prefix='/mgr'
                         , include = includeme, include_tags = [ 'cmsfix.includes' ])
-
-    set_workflow(GroupwareWorkflow())
 
     return config.make_wsgi_app()
