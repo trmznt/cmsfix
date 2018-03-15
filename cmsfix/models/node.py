@@ -212,7 +212,7 @@ class Node(BaseMixIn, Base):
 
     def as_dict(self):
         return dict(
-            _type_ = 'Node',
+            _type_ = type(self).__name__,
             site = self.site.fqdn,
             parent_url = self.parent.url,
             level = self.level,
