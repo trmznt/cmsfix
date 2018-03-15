@@ -140,15 +140,6 @@ class Node(BaseMixIn, Base):
         return self.title
 
 
-    def is_accessible_XXX(self, user):
-        # check if this is public
-
-        # check the workflow
-
-        # just return true for now
-        return True
-
-
     def is_manageable(self, user):
         # check if user has ADMIN role or owner of this page
         if not user:
@@ -212,13 +203,6 @@ class Node(BaseMixIn, Base):
     @classmethod
     def search(cls, text, site_id):
         raise NotImplementedError
-
-
-    def set_permission_xxx(self, default=True):
-        """ Node default permission:
-                group: follows parent
-        """
-        self.group_id = self.parent.group_id
 
 
     @classmethod
