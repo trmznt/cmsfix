@@ -48,3 +48,13 @@ class PageNode(Node):
     def search(cls, text, site_id):
         """ search on title, keywords, summary and content column """
         raise NotImplementedError()
+
+    def as_dict(self):
+        d = super().as_dict()
+        d.update(
+            title = self.title,
+            content = self.content,
+            summary = self.summary,
+            keywords = self.keywords,
+        )
+        return d
