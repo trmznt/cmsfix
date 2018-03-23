@@ -2,7 +2,7 @@
 # shell-like commands
 
 from rhombus.lib.utils import get_dbhandler
-from cmsfix.models.node import Node
+from cmsfix.models.node import Node, object_session
 
 
 def get_node(arg):
