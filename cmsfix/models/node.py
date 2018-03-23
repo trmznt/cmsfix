@@ -214,12 +214,20 @@ class Node(BaseMixIn, Base):
         return dict(
             _type_ = type(self).__name__,
             site = self.site.fqdn,
-            parent_url = self.parent.url,
+            uuid = self.uuid,
+            slug = self.slug,
+            path = self.path,
             level = self.level,
+            parent_url = self.parent.url,
             ordering = self.ordering,
             user = self.user.login,
-            lastuser = self.lastuser.login,
             group = self.group.name,
+            create_time = self.create_time,
+            publish_time = self.publish_time,
+            expire_time = self.expire_time,
+            state = self.state,
+            flags = self.flags,
+            listed = self.listed,
             mimetype = self.mimetype,
         )
 
@@ -237,12 +245,27 @@ class Node(BaseMixIn, Base):
     def search_text(self):
         return ''
 
+
     def search_keywords(self):
         return ''
 
 
     def __repr__(self):
         return '<%s|%s|%s|%s>' % (self.__class__.__name__, self.id, self.path, self.title)
+
+
+class DiffLog(BaseMixIn, Base):
+
+    __tablename__ = 'difflogs'
+
+    node_id = Column(types.Integer, ForeignKey('nodes.id'), nullable=False)
+    node = relationship(Node, uselist=False,
+        backref=('difflog', cascade='all, delete-orphan'))
+
+    diff = Column(types.Text, nullable=False, server_default='')
+
+    def __repr__(self):
+        return '<DiffLog|%d|%s>' % (self.node_id, self.stamp)
 
 
 class Workflow(BaseMixIn, Base):
