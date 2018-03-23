@@ -6,6 +6,7 @@ from rhombus.views import *
 from rhombus.lib.utils import random_string
 
 from cmsfix.lib.workflow import get_workflow
+from cmsfix.lib import cmds
 from cmsfix.views import *
 from cmsfix.views.node import get_toolbar, get_node, get_add_menu
 
@@ -74,11 +75,12 @@ class NodeViewer(object):
             n = self.node = self.new_node()
             get_workflow(n).set_defaults(n, req.user, parent_node)
             n.update(self.parse_form(req.params))
-            if not n.slug:
-                n.generate_slug()
-            parent_node.add(n)
-            get_dbhandler().session().flush()
-            n.ordering = 19 * n.id
+            #if not n.slug:
+            #    n.generate_slug()
+            #parent_node.add(n)
+            #get_dbhandler().session().flush()
+            #n.ordering = 19 * n.id
+            cmds.add(parent_node, n)
 
             self.post_save_node(req)
 

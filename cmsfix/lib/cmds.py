@@ -30,9 +30,14 @@ def ls(a_node):
 		print('%04d  %s' % (n.id, n.path))
 
 
-def add(a_node, new_node):
-	""" add new_node to a_node """
-	pass
+def add(parent_node, a_node):
+	""" add a_node to parent_node """
+	if not a_node.slug:
+		a_node.generate_slug()
+	parent_node.add(a_node)
+	object_session(a_node).flush()
+	a_node.ordering = 19 * a_node.id
+	return a_node
 
 
 def update(a_node, data):
