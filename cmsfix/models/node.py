@@ -260,7 +260,7 @@ class DiffLog(BaseMixIn, Base):
 
     node_id = Column(types.Integer, ForeignKey('nodes.id'), nullable=False)
     node = relationship(Node, uselist=False,
-        backref=('difflog', cascade='all, delete-orphan'))
+        backref=backref('difflog', cascade='all, delete-orphan'))
 
     diff = Column(types.Text, nullable=False, server_default='')
 
