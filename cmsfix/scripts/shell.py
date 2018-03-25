@@ -28,5 +28,6 @@ def main():
     set_index_service( IndexService(settings['cmsfix.whoosh.path']) )
 
     from IPython import embed
+    from cmsfix.lib import cmds
     embed()
 
