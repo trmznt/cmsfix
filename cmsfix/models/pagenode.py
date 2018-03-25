@@ -21,6 +21,8 @@ class PageNode(Node):
 
     __mapper_args__ = { 'polymorphic_identity': 1 }
 
+    __mimetypes__ = [ 'text/*', ]
+
 
     def update(self, obj):
 
@@ -52,6 +54,7 @@ class PageNode(Node):
     def as_dict(self):
         d = super().as_dict()
         d.update(
+            view = self.view,
             title = self.title,
             content = self.content,
             summary = self.summary,
