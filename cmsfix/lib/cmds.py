@@ -32,12 +32,7 @@ def ls(a_node):
 
 def add(parent_node, a_node):
 	""" add a_node to parent_node """
-	if not a_node.slug:
-		a_node.generate_slug()
-	parent_node.add(a_node)
-	object_session(a_node).flush()
-	a_node.ordering = 19 * a_node.id
-	return a_node
+	return parent_node.add(a_node)
 
 
 def update(a_node, data):

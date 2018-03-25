@@ -5,7 +5,10 @@ from rhombus.models.user import User, Group
 from rhombus.lib.roles import *
 from sqlalchemy.sql import func
 from sqlalchemy.ext.orderinglist import ordering_list
-import posixpath, time
+import posixpath, time, difflib, yaml
+
+from sqlalchemy_utils.types.uuid import UUIDType
+from sqlalchemy_utils.types.json import JSONType
 
 
 ## the models employed Rhombus' BaseMixIn to provide id, lastuser_id and stamp
@@ -31,7 +34,7 @@ class Node(BaseMixIn, Base):
     site_id = Column(types.Integer, ForeignKey('sites.id'), nullable=False)
     site = relationship('Site', uselist=False)
 
-    uuid = Column(UUID, nullable=False, unique=True)
+    uuid = Column(UUIDType, nullable=False, unique=True)
     slug = Column(types.String(128), nullable=False, index=True)
     path = Column(types.String(1024), nullable=False, server_default='')
     level = Column(types.Integer, nullable=False, server_default='-1')
@@ -81,6 +84,9 @@ class Node(BaseMixIn, Base):
     mimetype_id = Column(types.Integer, ForeignKey('eks.id'), nullable=False)
     mimetype = EK.proxy('mimetype_id', '@MIMETYPE')
 
+    json_code = deferred(Column(JSONType, nullable=False, server_default='{}'))
+    # for more options on the above, see note at the end of this file
+
     polymorphic_type = Column(types.Integer, nullable=False, server_default='0', index=True)
 
     __mapper_args__ = { 'polymorphic_on': polymorphic_type, 'polymorphic_identity': 0 }
@@ -88,6 +94,7 @@ class Node(BaseMixIn, Base):
                         UniqueConstraint('parent_id', 'ordering'), )
 
     __strict_container__ = None
+    __mimetypes__ = None
 
 
     def __init__(self, UUID=None, **kwargs):
@@ -95,6 +102,7 @@ class Node(BaseMixIn, Base):
             self.uuid = uuid.uuid1()
         else:
             self.uuid = UUID
+        self._versioning = None
 
         super().__init__(**kwargs)
 
@@ -157,10 +165,15 @@ class Node(BaseMixIn, Base):
 
 
     def add(self, n):
+        if not n.slug:
+            n.generate_slug()
         n.site_id = self.site_id
         n.level = self.level + 1
         self.children.append(n)
         n.generate_path()
+        object_session(n).flush()
+        n.ordering = 19 * n.id
+        return n
 
 
     @property
@@ -218,7 +231,7 @@ class Node(BaseMixIn, Base):
             slug = self.slug,
             path = self.path,
             level = self.level,
-            parent_url = self.parent.url,
+            parent_url = self.parent.url if self.parent else '',
             ordering = self.ordering,
             user = self.user.login,
             group = self.group.name,
@@ -229,8 +242,12 @@ class Node(BaseMixIn, Base):
             flags = self.flags,
             listed = self.listed,
             mimetype = self.mimetype,
+            json_code = self.json_code,
         )
 
+
+    def as_yaml(self):
+        return yaml.dump(self.as_dict(), default_flow_style=False)
 
     @classmethod
     def from_dict(d, obj=None):
@@ -240,6 +257,26 @@ class Node(BaseMixIn, Base):
         # update the low-level data
         obj.user = None
         obj.group = None
+
+
+    def versioning(self):
+        self._versioning = self.as_yaml().splitlines()
+
+
+    def diff(self):
+        curr_yaml = self.as_yaml().splitlines()
+        # difflib between self._versioning and curr_yaml
+        return difflib.context_diff(self._versioning, curr_yaml, n=1)
+
+
+    def difflog(self):
+        diff = ''.join(self.diff())
+        # create a difflog
+        difflog_item = DiffLog()
+        difflog_item.node = self
+        difflog_item.diff = diff
+        object_session(self).flush(difflog_item)
+        return difflog_item
 
 
     def search_text(self):
@@ -333,3 +370,14 @@ def self_container(item_cls):
     except KeyError:
         _containers_[item_cls] = [ item_cls ]
     return item_cls
+
+
+__NOTE__ = '''
+
+json_code can be used to further control a node.
+Below are options used in json_code:
+
+strict_containers: [ ]
+
+
+'''
