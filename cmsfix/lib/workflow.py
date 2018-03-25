@@ -41,26 +41,29 @@ class BaseWorkflow(object):
     def __init__(self):
         pass
 
-    def is_manageable(self, node, user):
-        """ can the user add/remove a node from this node, or
-            can the user delete this node
+    def is_manageable(self, node, request):
+        """ can the request (user) add/remove a node from this node, or
+            can the request (user) delete this node
         """
         raise NotImplementedError()
 
 
-    def is_editable(self, node, user):
-        """ can the user edit this node """
+    def is_editable(self, node, request):
+        """ can the request (user) edit this node """
         raise NotImplementedError()
 
 
-    def is_accessible(self, node, user):
-        """ can the user access (or view) this node """
+    def is_accessible(self, node, request):
+        """ can the request (user) access (or view) this node """
         raise NotImplementedError()
 
-    def set_defaults(self, node, user, parent_node):
-        """ set default parameters for a new node """
+    def set_defaults(self, node, request, parent_node):
+        """ set default parameters for a new node;
+            set group_id to parent_node's group_id
+        """
         node.group_id = parent_node.group_id
-        node.user_id = user.id
+        node.user_id = request.user.id
+        node.site_id = parent_node.site_id
 
     def show_menu(self, node, request):
         raise NotImplementedError()
@@ -111,7 +114,7 @@ class BaseWorkflow(object):
 
 class GroupwareWorkflow(BaseWorkflow):
     """ simple workflow, suitable for intranet
-        0 - public - all can access
+        0 - public - all can access within internal network
         1 - protected - only logged user can access
         2 - restricted - permission based on group,
                 * group owner can edit/manage
@@ -123,10 +126,12 @@ class GroupwareWorkflow(BaseWorkflow):
     styles = {  0: 'label label-success', 1: 'label label-info',
                 2: 'label label-warning', 3: 'label label-danger '}
 
-    def __init__(self):
-        pass
+    def __init__(self, internal_networks = [ '127/8', '10/8', '192.168/16' ]):
+        super().__init__()
+        self.internal_networks = internal_networks
 
-    def is_manageable(self, node, user):
+    def is_manageable(self, node, request):
+        user = request.user
         if not user:
             return False
         if user.has_roles(SYSADM, DATAADM):
@@ -137,21 +142,19 @@ class GroupwareWorkflow(BaseWorkflow):
             return True
         return False
 
-    def is_editable(self, node, user):
-        return self.is_manageable(node, user)
+    def is_editable(self, node, request):
+        return self.is_manageable(node, request)
 
-    def is_accessible(self, node, user):
+    def is_accessible(self, node, request):
         if node.state == 0:
             return True
         if node.state == 1 and user:
             return True
-        return self.is_manageable(node, user)
+        return self.is_manageable(node, request)
 
-    def set_defaults(self, node, user, parent_node):
+    def set_defaults(self, node, request, parent_node):
         """ group: inherit parent group """
-        node.group_id = parent_node.group_id
-        node.user_id = user.id
-        node.site_id = parent_node.site_id
+        super().set_defaults(node, request, parent_node)
 
         # all the rest of node types will be in private before being published
         node.state  = 3
@@ -210,7 +213,8 @@ class PublicWorkflow(BaseWorkflow):
         pass
 
 
-    def is_manageable(self, node, user):
+    def is_manageable(self, node, request):
+        user = request.user
         if not user:
             return False
         if user.has_roles(SYSADM, DATAADM):
@@ -221,8 +225,8 @@ class PublicWorkflow(BaseWorkflow):
             return True
         return False
 
-    def is_editable(self, node, user):
-        return self.is_manageable(node, user)
+    def is_editable(self, node, request):
+        return self.is_manageable(node, request)
         if not user:
             return False
         if node.state == 4 and node.user_id == user.id:
@@ -231,7 +235,8 @@ class PublicWorkflow(BaseWorkflow):
             return True
         return False
 
-    def is_accessible(self, node, user):
+    def is_accessible(self, node, request):
+        user = request.user
         if node.state == 0:
             return True
         if not user:
@@ -244,12 +249,11 @@ class PublicWorkflow(BaseWorkflow):
             return True
         if node.state == 3 and user.has_roles(EDITOR, REVIEWER):
             return True
-        return self.is_manageable(node, user)
+        return self.is_manageable(node, request)
 
-    def set_defaults(self, node, user, parent_node):
+    def set_defaults(self, node, request, parent_node):
         """ group: inherit parent group """
-        node.group_id = parent_node.group_id
-        node.user_id = user.id
+        super().set_defaults(node, request, parent_node)
 
         from cmsfix.models.commentnode import CommentNode
 
@@ -274,25 +278,25 @@ class SiteWorkflow(object):
     def __init__(self):
         pass
 
-    def is_manageable(self, node, user):
+    def is_manageable(self, node, request):
+        user = request.user
         if not user:
             return False
         if user.in_group(node.group):
             return True
         return False
 
-    def is_editable(self, node, user):
-        return self.is_manageable(node, user)
+    def is_editable(self, node, request):
+        return self.is_manageable(node, request)
 
-    def is_accessible(self, node, user):
+    def is_accessible(self, node, request):
         if node.state == 0:
             return True
-        return self.is_manageable(self, node, user)
+        return self.is_manageable(self, node, request)
 
-    def set_defaults(self, node, user, parent_node):
+    def set_defaults(self, node, request, parent_node):
         """ group: inherit parent group """
-        node.group_id = parent_node.group_id
-        node.user_id = user.id
+        super().set_defaults(node, request, parent_node)
         node.state  = 2
         node.listed = True
 
@@ -305,17 +309,17 @@ class InheritedWorkflow(BaseWorkflow):
     states = { 0: 'Not Applicable' }
     styles = { 0: 'label label-info'}
 
-    def is_manageable(self, node, user):
-        return get_workflow(node.parent).is_manageable(node.parent, user)
+    def is_manageable(self, node, request):
+        return get_workflow(node.parent).is_manageable(node.parent, request)
 
-    def is_editable(self, node, user):
-        return get_workflow(node.parent).is_editable(node.parent, user)
+    def is_editable(self, node, request):
+        return get_workflow(node.parent).is_editable(node.parent, request)
 
-    def is_accessible(self, node, user):
-        return get_workflow(node.parent).is_accessible(node.parent, user)
+    def is_accessible(self, node, request):
+        return get_workflow(node.parent).is_accessible(node.parent, request)
 
-    def set_defaults(self, node, user, parent_node):
-        super().set_defaults(node, user, parent_node)
+    def set_defaults(self, node, request, parent_node):
+        super().set_defaults(node, request, parent_node)
 
 
 # TODO:

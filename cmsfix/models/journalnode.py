@@ -107,25 +107,26 @@ class JournalWorkflow(GroupwareWorkflow):
         XXX: the above is not implemented yet.
     """
 
-    def set_defaults(self, node, user, parent_node):
-        node.group_id = parent_node.group_id
-        node.user_id = user.id
+    def set_defaults(self, node, request, parent_node):
+        super().set_defaults(node, request, parent_node)
         node.state = 2 # journal can only be re
         node.listed = False
 
-    def is_editable(self, node, user):
-        if node.user_id == user.id:
+    def is_editable(self, node, request):
+        if node.user_id == request.user.id:
             return True
         return False
 
-    def is_manageable(self, node, user):
+    def is_manageable(self, node, request):
+        user = request.user
         if node.user_id == user.id or node.parent.user_id == user.id:
             return True
         if user.has_roles(SYSADM, DATAADM):
             return True
         return False
 
-    def is_accessible(self, node, user):
+    def is_accessible(self, node, request):
+        user = request.user
         if not node or not user:
             return False
         if node.user_id == user.id or node.parent.user_id == user.id:
@@ -150,13 +151,12 @@ class JournalItemWorkflow(GroupwareWorkflow):
     states = { 100: 'sealed', 101: 'reviewed', 102: 'drafted' }
     styles = { 100: 'label label-success', 101: 'label label-info', 102: 'label label-danger '}
 
-    def set_defaults(self, node, user, parent_node):
-        node.group_id = parent_node.group_id
-        node.user_id = user.id
+    def set_defaults(self, node, request, parent_node):
+        super().set_defaults(node, request, parent_node)
         node.state = 102
         node.listed = False
 
-    def is_editable(self, node, user):
+    def is_editable(self, node, request):
         if node.state == 100:
             return False
         if node.state == 101:
@@ -164,7 +164,7 @@ class JournalItemWorkflow(GroupwareWorkflow):
         if node.state == 102:
             return True
 
-    def is_manageable(self, node, user):
+    def is_manageable(self, node, request):
         print('node.state=%d' % node.state)
         if node.state == 100:
             return False
@@ -174,8 +174,9 @@ class JournalItemWorkflow(GroupwareWorkflow):
             return True
         return False
 
-    def is_accessible(self, node, user):
+    def is_accessible(self, node, request):
         # journal node is accessible to owner and container's user
+        user = request.user
         if not user:
             return False
         print('check is_accessible()')
@@ -186,7 +187,7 @@ class JournalItemWorkflow(GroupwareWorkflow):
             if node.parent.user_id == user.id:
                 return True
         if isinstance(node, JournalItemNode):
-            return get_workflow(node.parent).is_accessible(node.parent, user)
+            return get_workflow(node.parent).is_accessible(node.parent, request)
         return False
 
 # JournalWorkflow and JournalItemWorkflow are specials, created here first

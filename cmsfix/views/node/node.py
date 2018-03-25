@@ -73,7 +73,7 @@ class NodeViewer(object):
             self.pre_save_node(req)
 
             n = self.node = self.new_node()
-            get_workflow(n).set_defaults(n, req.user, parent_node)
+            get_workflow(n).set_defaults(n, req, parent_node)
             n.update(self.parse_form(req.params))
             #if not n.slug:
             #    n.generate_slug()
@@ -94,7 +94,7 @@ class NodeViewer(object):
 
             # create a dummy instance just for the purpose of showing edit form
             self.node = self.new_node()
-            get_workflow(self.node).set_defaults(self.node, req.user, parent_node)
+            get_workflow(self.node).set_defaults(self.node, req, parent_node)
             # temporarily assigning parent for breadcrumb purposes
             #self.node.parent_id = parent_node.id
             #self.node.site = parent_node.site
@@ -343,7 +343,7 @@ class NodeViewer(object):
         else:
             wf = workflow
 
-        if not wf.is_manageable(n, request.user):
+        if not wf.is_manageable(n, request):
             return div(node_info(request, n))
 
         bar = nav(class_='navbar navbar-default')[
@@ -375,7 +375,7 @@ class NodeViewer(object):
         n = self.node
         wf = workflow or get_workflow(n)
 
-        if not wf.is_manageable(n, request.user):
+        if not wf.is_manageable(n, request):
             bar = div(class_='collapse navbar-collapse')[
                     ul(name='cmsfix.statusbar.left', class_='nav navbar-nav')[
                         li(a('[Node ID: %d]' % n.id)),
@@ -410,7 +410,7 @@ class NodeViewer(object):
         n = self.node
         wf = workflow or get_workflow(n)
 
-        if not wf.is_editable(n, request.user):
+        if not wf.is_editable(n, request):
             bar = div(class_='collapse navbar-collapse')[
                     ul(name='cmsfix.editingbar.left', class_='nav navbar-nav')[
                         li('[Node ID: %d]' % n.id if n.id else '[Node ID: Undefined]'),

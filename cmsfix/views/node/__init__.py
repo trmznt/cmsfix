@@ -17,7 +17,7 @@ def index(request):
     n = get_node(request)
     wf = get_workflow(n)
 
-    if not wf.is_accessible(n, request.user):
+    if not wf.is_accessible(n, request):
         return error_page(request, 'Page is not accessible!')
 
     #module = get_module(n.__class__)
@@ -32,7 +32,7 @@ def view(request):
     n = get_node(request)
     wf = get_workflow(n)
 
-    if not wf.is_manageable(n, request.user):
+    if not wf.is_manageable(n, request):
         return error_page(request, 'Page is not manageable by current user!')
 
     #module = get_module(n.__class__)
@@ -47,7 +47,7 @@ def content(request):
     n = get_node(request)
     wf = get_workflow(n)
 
-    if not wf.is_manageable(n, request.user):
+    if not wf.is_manageable(n, request):
         return error_page(request, 'You are not authorized to view the content of this node!')
 
     viewer = get_viewer(n.__class__)
@@ -63,7 +63,7 @@ def info(request):
     n = get_node(request)
     wf = get_workflow(n)
 
-    if not wf.is_manageable(n, request.user):
+    if not wf.is_manageable(n, request):
         return error_page(request, 'You are not authorized to view this node meta information')
 
     viewer = get_viewer(n.__class__)
@@ -94,7 +94,7 @@ def edit(request):
     n = get_node(request)
     wf = get_workflow(n)
 
-    if not wf.is_editable(n, request.user):
+    if not wf.is_editable(n, request):
         return error_page(request, 'You are not authorized to edit this node!')
 
     # check stamp consistency
@@ -118,7 +118,7 @@ def add(request):
     n = get_node(request)
     wf = get_workflow(n)
 
-    if not wf.is_manageable(n, request.user):
+    if not wf.is_manageable(n, request):
         return error_page(request, 'You are not authorized to add a new node here!')
 
     # get the node type
@@ -265,7 +265,7 @@ def get_node(request):
 
 def get_toolbar(node, request):
 
-    if node.is_manageable(request.user):
+    if node.is_manageable(request):
         module = get_module(node.__class__)
         return module.toolbar(request, node)
     return ''
