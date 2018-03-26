@@ -4,6 +4,8 @@
 from cmsfix.lib.roles import SYSADM, DATAADM, EDITOR, REVIEWER
 from rhombus.lib.tags import ul, li, a, span
 
+from ipaddress import ip_address, ip_network
+
 
 ## global workflow
 __WORKFLOW__ = None
@@ -126,9 +128,16 @@ class GroupwareWorkflow(BaseWorkflow):
     styles = {  0: 'label label-success', 1: 'label label-info',
                 2: 'label label-warning', 3: 'label label-danger '}
 
-    def __init__(self, internal_networks = [ '127/8', '10/8', '192.168/16' ]):
+    def __init__(self, networks = ['127.0.0.0/8', '10.0.0.0/8', '192.168.0.0/16']):
         super().__init__()
-        self.internal_networks = internal_networks
+        self.networks = [ ip_network(n) for n in networks ]
+
+    def in_internal_networks(self, ipaddr):
+        ip_addr = ip_address(ipaddr)
+        for n in self.networks:
+            if ip_addr in n:
+                return True
+        return False
 
     def is_manageable(self, node, request):
         user = request.user
@@ -146,6 +155,9 @@ class GroupwareWorkflow(BaseWorkflow):
         return self.is_manageable(node, request)
 
     def is_accessible(self, node, request):
+        user = request.user
+        if not user and not self.in_internal_networks(request.remote_addr):
+            return False
         if node.state == 0:
             return True
         if node.state == 1 and user:
