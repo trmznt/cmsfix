@@ -11,6 +11,7 @@ from rhombus.lib.utils import get_dbhandler, cerr, cout
 from rhombus.lib.tags import *
 
 import docutils.core
+import os
 
 class PageNodeViewer(NodeViewer):
 
@@ -30,7 +31,19 @@ class PageNodeViewer(NodeViewer):
         else:
             content = node.content
 
-        return render_to_response(self.template_view,
+        # check if we have a custom template
+        path = node.path
+        if path == '/':
+            path = 'home.mako'
+        else:
+            path = path[1:] + '.mako'
+        cerr('checking for template %s' % path)
+        if os.path.exists('templates/'+path):
+            template_view = path
+        else:
+            template_view = self.template_view
+
+        return render_to_response(template_view,
             {   'node': node,
                 'breadcrumb': self.breadcrumb(request),
                 'html': content,
