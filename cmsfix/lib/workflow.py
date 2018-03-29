@@ -280,12 +280,16 @@ class PublicWorkflow(BaseWorkflow):
             node.listed = True
 
 
-class SiteWorkflow(object):
+class SiteWorkflow(BaseWorkflow):
     """ suitable for institutional website
         0 - public - all can view, group member can manage
         1 - restricted - only logged user can view, group member can manage
         2 - protected - only group member can view/manage
     """
+
+    states = { 0: 'public', 1: 'restricted', 2: 'protected' }
+    styles = {  0: 'label label-success', 1: 'label label-info',
+                2: 'label label-danger '}
 
     def __init__(self):
         pass
@@ -304,7 +308,7 @@ class SiteWorkflow(object):
     def is_accessible(self, node, request):
         if node.state == 0:
             return True
-        return self.is_manageable(self, node, request)
+        return self.is_manageable(node, request)
 
     def set_defaults(self, node, request, parent_node):
         """ group: inherit parent group """
