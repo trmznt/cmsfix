@@ -456,12 +456,12 @@ def generate_sesskey(user_id, node_id=None):
     return '%08x%s%s' % (user_id, random_string(8), node_id_part)
 
 
-def index(request, node):
+def index_xxx(request, node):
 
     return render_node(node, request)
 
 
-def render_node(node, request):
+def render_node_xxx(node, request):
 
     pass
 
