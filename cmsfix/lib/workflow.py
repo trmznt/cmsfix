@@ -114,6 +114,39 @@ class BaseWorkflow(object):
         assert dbsession.user.id == request.user.id, "Fatal Error: inconsistent user id in db session"
 
 
+class BlogWorkflow(BaseWorkflow):
+    """ a basic workflow, suitable for blogging platform
+        0 - public - all can access
+        1 - draft - only owner & admin can access & modify
+    """
+
+    states = { 0: 'public', 1: 'draft' }
+    styles = {  0: 'label label-success', 1: 'label label-danger' }
+
+    def is_manageable(self, node, request):
+        user = request.user
+        if not user:
+            return False
+        if user.has_roles(SYSADM, DATAADM):
+            return True
+        if node.user_id == user.id:
+            return True
+        return False
+
+    def is_accessible(self, node, request):
+        if node.state == 0:
+            return True
+        return self.is_manageable(node, request)
+
+    def set_defaults(self, node, request, parent_node):
+        """ group: inherit parent group """
+        super().set_defaults(node, request, parent_node)
+
+        # all the rest of node types will be in private before being published
+        node.state  = 1
+        node.listed = True
+
+
 class GroupwareWorkflow(BaseWorkflow):
     """ simple workflow, suitable for intranet
         0 - public - all can access within internal network
