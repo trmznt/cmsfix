@@ -210,13 +210,14 @@ class NodeViewer(object):
             d['group_id'] = int(f.get('cmsfix-group_id'))
         if 'cmsfix-user_id' in f:
             d['user_id'] = int(f.get('cmsfix-user_id'))
-        if 'publish_time' in f:
+        if 'cmsfix-publish_time' in f:
             d['publish_time'] = f.get('cmsfix-publish_time')
-        if 'expire_time' in f:
-            d['expire_time'] = f.get('cmsfix-expire-_time')
+        if 'cms-expire_time' in f:
+            d['expire_time'] = f.get('cmsfix-expire_time')
         d['mimetype_id'] = int(f.get('cmsfix-mimetype_id', 0))
         if 'tags' in f:
             d['tags'] = f.getall('cmsfix-tags')
+        d['listed'] = True if 'cmsfix-listed' in f else False
 
         return d
 
@@ -248,6 +249,9 @@ class NodeViewer(object):
 
             fieldset(
                 input_select('cmsfix-tags', 'Tags', offset=1, multiple=True),
+                checkboxes('cmsfix-options', 'Options', [
+                    ('cmsfix-listed', 'Listed', True),
+                ], offset=1 ),
                 node_submit_bar(create).set_hide(True),
                 name='cmsfix.node-footer'
             )

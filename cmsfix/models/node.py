@@ -117,6 +117,8 @@ class Node(BaseMixIn, Base):
             self.group_id = obj['group_id']
         if 'mimetype_id' in obj and type(obj['mimetype_id']) == int:
             self.mimetype_id = obj['mimetype_id']
+        if 'listed' in obj:
+            self.listed = bool(obj['listed'])
 
 
     def clear(self):
