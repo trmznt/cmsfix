@@ -138,6 +138,18 @@ def add(request):
 
 
 @roles(PUBLIC)
+def yaml(request):
+
+    n = get_node(request)
+    wf = get_workflow(n)
+
+    if not wf.is_accessible(n, request):
+        return error_page(request, 'Page is not accessible!')
+
+    return Response(n.as_yaml(), content_type='text/plain')
+
+
+@roles(PUBLIC)
 def action(request):
 
     n = get_node(request)
