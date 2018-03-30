@@ -21,7 +21,7 @@ from cmsfix.views.node import filenode as filenode_mod
 from cmsfix.views.node import commentnode as commentnode_mod
 from cmsfix.lib.workflow import set_workflow, GroupwareWorkflow
 from cmsfix.lib.whoosh import IndexService, set_index_service
-from cmsfix.lib import macro
+from cmsfix.lib import macro, helpers
 
 import importlib
 
@@ -34,6 +34,7 @@ def includeme( config ):
     set_func_userid( get_userid_func )
 
     config.add_static_view('static', 'static', cache_max_age=3600)
+    config.add_subscriber( add_globals, BeforeRender )
 
     config.add_route('home', '/')
     config.add_view('cmsfix.views.home.index', route_name='home')
@@ -114,9 +115,10 @@ def get_userid_func():
     return get_dbhandler().session().user.id
 
 
-@subscriber(BeforeRender)
 def add_globals(ev):
     ev['macro'] = macro
+    ev['m'] = macro
+    ev['h'] = helpers
 
 
 def main_xxx(global_config, **settings):
