@@ -160,8 +160,19 @@ class Node(BaseMixIn, Base):
         return False
 
 
+    # Flags related functions
+
     def is_commentable(self):
-        return self.flags & (1 << 16)
+        return self.flags & (1 << 15)
+
+    def set_commentable(self, val=True):
+        self.flags |= ((1 if val else 0) << 15)
+
+    def is_inmenu(self):
+        return self.flags & (1 << 14)
+
+    def set_inmenu(self, val=True):
+        self.flags |= ((1 if val else 0) << 14)
 
 
     def add(self, n):
