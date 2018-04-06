@@ -36,6 +36,8 @@ class PageNode(Node):
             self.summary = obj['summary']
         if 'keywords' in obj:
             self.keywords = obj['keywords']
+        if 'view' in obj:
+            self.view = obj['view']
 
     def generate_slug(self):
         self.slug = self.title.replace(' ','-').replace('--','-').replace("'",'').replace('#','').replace('%','').lower()
