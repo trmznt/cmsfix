@@ -122,6 +122,7 @@ def add_globals(ev):
     ev['macro'] = macro
     ev['m'] = macro
     ev['h'] = helpers
+    ev['dbh'] = get_dbhandler
 
 
 def main_xxx(global_config, **settings):
