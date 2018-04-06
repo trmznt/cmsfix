@@ -217,7 +217,8 @@ class NodeViewer(object):
         d['mimetype_id'] = int(f.get('cmsfix-mimetype_id', 0))
         if 'tags' in f:
             d['tags'] = f.getall('cmsfix-tags')
-        d['listed'] = True if 'cmsfix-listed' in f else False
+        if 'cmsfix-options' in f:
+            d['listed'] = True if 'cmsfix-listed' in f else False
 
         return d
 
@@ -249,8 +250,10 @@ class NodeViewer(object):
 
             fieldset(
                 input_select('cmsfix-tags', 'Tags', offset=1, multiple=True),
-                checkboxes('cmsfix-options', 'Options', [
-                    ('cmsfix-listed', 'Listed', True),
+                # below is a mean to flag that we have options in the form
+                input_hidden(name='cmsfix-options', value=1),
+                checkboxes('cmsfix-option-group', 'Options', [
+                    ('cmsfix-listed', 'Listed', node.listed),
                 ], offset=1 ),
                 node_submit_bar(create).set_hide(True),
                 name='cmsfix.node-footer'

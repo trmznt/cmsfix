@@ -58,6 +58,10 @@ class PageNodeViewer(NodeViewer):
         d['title'] = f['cmsfix-title']
         d['content'] = f['cmsfix-content']
         d['summary'] = f['cmsfix-summary']
+        d['keywords'] = f['cmsfix-keywords']
+
+        if 'cmsfix-options' in f:
+            d['view'] = True if 'cmsfix-view' in f else False
 
         return d
 
@@ -73,9 +77,11 @@ class PageNodeViewer(NodeViewer):
             input_textarea('cmsfix-content', 'Content', value=n.content, offset=1, size="18x8"),
             #div(literal(node.content) if node.mimetype == 'text/html' else node.content,
             #    id='cmsfix-content', name='cmsfix-content'),
-            input_textarea('cmsfix-summary', 'Summary', value=n.summary, offset=1, size='5x8')
+            input_textarea('cmsfix-summary', 'Summary', value=n.summary, offset=1, size='5x8'),
+            input_textarea('cmsfix-keywords', 'Keywords', value=n.keywords, offset=1, size='2x8'),
         )
 
+        eform.get('cmsfix-option-group').add( checkbox_item('cmsfix-view', 'View as index', n.view ))
         eform.get('cmsfix-mimetype_id').attrs['onChange'] = 'set_editor(this.value);'
         jscode += 'var html_mimetype=%d;\n' % dbh.EK.getid('text/html', dbh.session())
 
