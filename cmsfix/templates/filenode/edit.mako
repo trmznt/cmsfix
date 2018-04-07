@@ -1,4 +1,5 @@
 <%inherit file="cmsfix:templates/base.mako" />
+<!-- cmsfix:templates/filenode/edit.mako -->
 
 <!-- global progressbar -->
 <div id='fileprogress' class='progress progressbar-container' style='display:none'>
@@ -12,6 +13,7 @@ ${eform}
 ##
 ##
 <%def name='jscode()'>
+  <!-- cmsfix:templates/filenode/edit.mako jscode() -->
   ${code | n}
 </%def>
 

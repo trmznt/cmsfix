@@ -12,6 +12,7 @@
 <%! from rhombus.views.user import user_menu %>
 <!DOCTYPE html>
 <html lang="en">
+  <!-- cmsfix:templates/base.mako -->
   <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -101,8 +102,9 @@
     </footer>
 % endif
 
-
+<!-- self.scriptlinks() -->
 ${self.scriptlinks()}
+<!-- /self.scriptlinks() -->
 
   </body>
 
@@ -149,5 +151,6 @@ ${ code or '' | n }
 
 ##
 <%def name="jslink()">
+<!-- cmsfix:templates/base.mako jslink() -->
 ${ codelink or '' | n }
 </%def>
