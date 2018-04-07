@@ -14,7 +14,7 @@ import os.path, mimetypes
 
 class FileNodeViewer(NodeViewer):
 
-    template_edit_form = 'cmsfix:templates/filenode/edit.mako'
+    template_edit = 'cmsfix:templates/filenode/edit.mako'
 
     def render(self, request):
 
