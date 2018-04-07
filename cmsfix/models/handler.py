@@ -46,7 +46,16 @@ class DBHandler(rho_handler.DBHandler):
     def get_nodes_by_level(self, level):
         return self.Node.query(self.session()).filter( self.Node.level == level)
 
-    def get_nodes(self, params = None):
-        if not params:
-            return self.Node.query(self.session())
-        raise NotImplementedError()
+    def get_nodes(self, **kwargs):
+
+        if 'type' in kwargs:
+            _type = kwargs['type']
+        else:
+            _type = self.Node
+
+        q = _type.query(self.session())
+
+        if 'level' in kwargs:
+            q = q.filter( _type.level == kwargs['level'] )
+
+        return q
