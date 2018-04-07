@@ -98,11 +98,8 @@ def edit(request):
         return error_page(request, 'You are not authorized to edit this node!')
 
     # check stamp consistency
-    if request.method == 'POST' and abs( n.stamp.timestamp() - float(request.params['cmsfix-stamp']) ) > 0.01:
-            return error_page(request,
-                'Data entry has been modified by %s at %s. Please cancel and re-edit your entry.'
-                % (n.lastuser.login, n.stamp)
-            )
+    result = check_stamp(request, n)
+    if result != True: return result
 
     viewer = get_viewer(n.__class__)
     return viewer(n, request).edit()
@@ -314,3 +311,13 @@ def get_add_menu(node, request):
     ]
 
     return add_menu_list
+
+
+def check_stamp(request, node):
+    if (request.method == 'POST' and 
+        abs( node.stamp.timestamp() - float(request.params['cmsfix-stamp']) ) > 0.01):
+            return error_page(request,
+                'Data entry has been modified by %s at %s. Please cancel and re-edit your entry.'
+                % (node.lastuser.login, node.stamp)
+            )
+    return True
