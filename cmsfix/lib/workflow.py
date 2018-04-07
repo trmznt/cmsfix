@@ -66,6 +66,7 @@ class BaseWorkflow(object):
         node.group_id = parent_node.group_id
         node.user_id = request.user.id
         node.site_id = parent_node.site_id
+        node.parent_id = parent_node.id
 
     def show_menu(self, node, request):
         raise NotImplementedError()
@@ -359,16 +360,30 @@ class InheritedWorkflow(BaseWorkflow):
     styles = { 0: 'label label-info'}
 
     def is_manageable(self, node, request):
-        return get_workflow(node.parent).is_manageable(node.parent, request)
+        parent_node = self.get_parent_node(node)
+        return get_workflow(parent_node).is_manageable(parent_node, request)
 
     def is_editable(self, node, request):
-        return get_workflow(node.parent).is_editable(node.parent, request)
+        parent_node = self.get_parent_node(node)
+        return get_workflow(parent_node).is_editable(parent_node, request)
 
     def is_accessible(self, node, request):
-        return get_workflow(node.parent).is_accessible(node.parent, request)
+        parent_node = self.get_parent_node(node)
+        return get_workflow(parent_node).is_accessible(parent_node, request)
 
     def set_defaults(self, node, request, parent_node):
         super().set_defaults(node, request, parent_node)
+        # for new node, we add to temporary variable as a hack
+        node._parent_node = parent_node
+
+    def get_parent_node(self, node):
+        if node.parent is None:
+            if not hasattr(node, '_parent_node'):
+                raise RuntimeError(
+                    'FATAL ERR: need to define either node.parent or node._parent_node')
+            return node._parent_node
+        return node.parent
+
 
 
 # TODO:
