@@ -272,6 +272,19 @@ class Node(BaseMixIn, Base):
         obj.group = None
 
 
+    def ascendant(self, node):
+        """ check wheter self is an ascendant of node """
+        if self.level < node.level: return False
+        if self.level == node.level:
+            return True if self == node else False
+        parent_node = self.parent
+        while parent_node.level >= node.level:
+            if parent_node == node:
+                return True
+            parent_node = self.parent
+        return False
+
+
     def versioning(self):
         self._versioning = self.as_yaml().splitlines()
 
