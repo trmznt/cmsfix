@@ -58,7 +58,10 @@ class PageNodeViewer(NodeViewer):
         d['title'] = f['cmsfix-title']
         d['content'] = f['cmsfix-content']
         d['summary'] = f['cmsfix-summary']
-        d['keywords'] = f['cmsfix-keywords']
+
+        # some of our inherited class might not use keywords
+        if 'keywords' in d:
+            d['keywords'] = f['cmsfix-keywords']
 
         if 'cmsfix-options' in f:
             d['view'] = True if 'cmsfix-view' in f else False
