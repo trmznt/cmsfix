@@ -96,6 +96,10 @@ class Node(BaseMixIn, Base):
     __strict_container__ = None
     __mimetypes__ = None
 
+    ## flag options
+    f_commentable = (1 << 15)
+    f_inmenu = (1 << 14)
+
 
     def __init__(self, UUID=None, **kwargs):
         if not UUID:
@@ -175,6 +179,12 @@ class Node(BaseMixIn, Base):
 
     def set_inmenu(self, val=True):
         self.flags |= ((1 if val else 0) << 14)
+
+    def check_flags(self, flag):
+        return self.flags & flag
+
+    def set_flags(self, flag, val):
+        self.flags = (self.flags | flag) if val == True else (self.flags & ~flag)
 
 
     def add(self, n):
