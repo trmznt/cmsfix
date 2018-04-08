@@ -69,6 +69,10 @@ def macro(func):
 
     return func
 
+## -- MACRO --
+##
+## all macro functions should return either html or literal objects
+##
 
 @macro
 def M_ListChildNodes(node, components):
