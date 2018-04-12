@@ -93,6 +93,13 @@ class JournalNodeViewer(NodeViewer):
         return d
 
 
+    def new_node(self):
+
+        n = JournalNode()
+        n.mimetype_id = get_dbhandler().get_ekey('text/x-rst').id
+        return n
+
+
     def toolbar_xxx(self, request):
         """ a much simple toolbar, only has view, edit, delete and publish button """
 
