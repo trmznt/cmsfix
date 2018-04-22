@@ -384,31 +384,37 @@ class NodeViewer(object):
 
         if not wf.is_manageable(n, request):
             bar = div(class_='collapse navbar-collapse')[
-                    ul(name='cmsfix.statusbar.left', class_='nav navbar-nav')[
-                        li(a('[Node ID: %d]' % n.id)),
-                    ]
+                    span('[Node ID: %d]' % n.id, class_='navbar-text'),
                 ]
 
         else:
-            bar = div(class_='collapse navbar-collapse dropup')[
-                    ul(name='cmsfix.statusbar.left', class_='nav navbar-nav')[
-                        li(a('[Node ID: %d]' % n.id)),
-                        li(a('View', href=request.route_url('node-view', path=n.url))),
-                        li(a('Edit', href=request.route_url('node-edit', path=n.url))),
-                        li(a('Content', href=request.route_url('node-content', path=n.url))),
-                        li(a('Info', href=request.route_url('node-info', path=n.url))),
+            bar = div(class_='collapse navbar-collapse')[
+                    span('[Node ID: %d]' % n.id, class_='navbar-text'),
+
+                    ul(name='cmsfix.statusbar.left', class_='navbar-nav mr-auto')[
+                        li(
+                            a('View', href=request.route_url('node-view', path=n.url),
+                                class_='nav-link'), class_='nav-item'),
+                        li(
+                            a('Edit', href=request.route_url('node-edit', path=n.url),
+                                class_='nav-link'), class_='nav-item'),
+                        li(
+                            a('Content', href=request.route_url('node-content', path=n.url),
+                                class_='nav-link'), class_='nav-item'),
+                        li(
+                            a('Info', href=request.route_url('node-info', path=n.url),
+                                class_='nav-link'), class_='nav-item'),
                         get_add_menu(n, request),
                     ],
-                    ul(class_='nav navbar-nav navbar-right')[
-                        li(a('Delete')),
+                    ul(class_='navbar-nav')[
+                        li(a('Delete', class_='nav-link'), class_='nav-item'),
                         wf.show_menu(n, request)
                     ]
                 ]
 
-        return nav(class_='navbar navbar-default')[
-            div(class_='container-fluid')[
+        return nav(class_='navbar fixed-bottom navbar-default navbar-expand-sm '
+            'navbar-light statusbar')[
                 bar
-            ]
         ]
 
 
@@ -428,23 +434,28 @@ class NodeViewer(object):
         else:
             labels = self.submit_bar_text()
             bar = div(class_='collapse navbar-collapse dropup')[
-                    ul(name='cmsfix.editingbar.left', class_='nav navbar-nav')[
-                        li(a('[Node ID: %d]' % n.id) if n.id else a('[Node ID: Undefined]')),
-                        li(a(span(labels[0], class_='btn btn-primary navbar-btn'),
+                    span(('[Node ID: %d]' % n.id) if n.id else ('[Node ID: Undefined]'),
+                        class_='navbar-text mr-2'),
+
+                    ul(name='cmsfix.editingbar.left', class_='navbar-nav mr-auto')[
+
+                        li(
+                            span(labels[0], class_='btn btn-primary navbar-btn mr-2',
                                 onclick=literal(r"$('#_method\\.save').click();"))),
-                        li(a(span(labels[1], class_='btn btn-primary navbar-btn'),
+                        li(
+                            span(labels[1], class_='btn btn-primary navbar-btn mr-2',
                                 onclick=literal(r"$('#_method\\.save_edit').click();"))),
+
                     ],
-                    ul(name='cmsfix.editingbar.right', class_='nav navbar-nav navbar-right')[
-                        li(a(span('Cancel', class_='btn btn-primary navbar-btn'),
-                                onclick=literal("alert('Not implemented yet');"))),
+                    ul(name='cmsfix.editingbar.right', class_='navbar-nav')[
+                        li(span('Cancel', class_='btn btn-warning navbar-btn'),
+                                onclick=literal("alert('Not implemented yet');")),
                     ]
                 ]
 
-        return nav(class_='navbar navbar-default')[
-            div(class_='container-fluid')[
+        return nav(class_='navbar fixed-bottom navbar-default navbar-expand-sm '
+            'navbar-light statusbar')[
                 bar
-            ]
         ]
 
 
