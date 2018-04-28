@@ -87,20 +87,14 @@ def includeme( config ):
     config.add_route('node-index', '{path:.*}')
     config.add_view('cmsfix.views.node.index', route_name='node-index')
 
-    #register_module(Node, node_mod)
-    #register_module(PageNode, pagenode_mod)
-    #register_module(FileNode, filenode_mod)
-    #register_module(JournalNode, journalnode_mod)
-    #register_module(JournalItemNode, journalitemnode_mod)
-
     register_viewer(Node, node_mod.NodeViewer)
     register_viewer(PageNode, pagenode_mod.PageNodeViewer)
     register_viewer(FileNode, filenode_mod.FileNodeViewer)
     register_viewer(JournalNode, journalnode_mod.JournalNodeViewer)
     register_viewer(JournalItemNode, journalitemnode_mod.JournalItemNodeViewer)
 
-    config.override_asset('rhombus:templates/base.mako', 'cmsfix:templates/base.mako')
-    config.override_asset('rhombus:templates/plainbase.mako', 'cmsfix:templates/plainbase.mako')
+    # Override assets here, eg:
+    # config.override_asset('cmsfix:templates/base.mako', 'templates/base.mako')
 
     # set index service
     set_index_service(IndexService(config.registry.settings['cmsfix.whoosh.path']))
@@ -112,6 +106,9 @@ def includeme( config ):
     W = getattr(M, workflow_class)
     set_workflow(W())
 
+    if 'cmsfix.title' in config.registry.settings:
+        import rhombus
+        rhombus._TITLE_ = config.registry.settings['cmsfix.title']
 
 
 def get_userid_func():

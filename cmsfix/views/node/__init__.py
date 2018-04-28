@@ -289,8 +289,8 @@ def get_add_menu(node, request):
     if len(item_classes) == 0:
         return ''
 
-    add_menu_list = li(class_ = "dropdown" )[
-        a(class_='dropdown-toggle', role='button',
+    add_menu_list = li(class_ = "nav-item dropup" )[
+        a(class_='nav-link dropdown-toggle', role='button', id='addMenu',
                     **  { 'data-toggle': 'dropdown',
                             'aria-haspopup': 'true',
                             'aria-expanded': 'false',
@@ -299,12 +299,11 @@ def get_add_menu(node, request):
                     'Add ',
                     span(class_='caret')
                 ],
-        ul(class_='dropdown-menu')[
+        div(class_='dropdown-menu')[
             tuple(
-                li(
-                    a(c.get_label(),
+                a(c.get_label(), class_='dropdown-item',
                         href=request.route_url('node-add',
-                                    path=node.url, _query={ 'type': c.__name__ }))
+                                    path=node.url, _query={ 'type': c.__name__ })
                 ) for c in item_classes
             )
         ]

@@ -2,7 +2,7 @@
 # workflow
 
 from cmsfix.lib.roles import SYSADM, DATAADM, EDITOR, REVIEWER
-from rhombus.lib.tags import ul, li, a, span
+from rhombus.lib.tags import ul, li, a, span, div
 
 from ipaddress import ip_address, ip_network
 
@@ -83,20 +83,20 @@ class BaseWorkflow(object):
 
     def show_menu(self, node, request):
         """ based on user authorization, show workflow menu; return a <li> element """
-        html = li(class_='dropdown')
+        html = li(class_='nav-item dropup')
         html.add(
-            a(span(self.states[node.state], class_=self.styles[node.state]), span(class_='caret'), href="#", class_='dropdown-toggle',
+            a(span(self.states[node.state], class_=self.styles[node.state]), span(class_='caret'),
+                href="#", class_='nav-link dropdown-toggle',
             **{ "data-toggle": "dropdown", "role": "button", "aria-haspopup": "true",
                 "aria-expanded": "false"})
         )
         html.add(
-            ul(class_='dropdown-menu')[
+            div(class_='dropdown-menu dropdown-menu-right')[
                 tuple(
-                    li(
-                        a(self.states[i],
+                    a(self.states[i], class_='dropdown-item',
                             href=request.route_url('node-action', path=node.url,
-                                        _query = { '_method': 'set-state', 'state': i })) )
-                    for i in sorted(self.states.keys(), reverse=True)
+                                        _query = { '_method': 'set-state', 'state': i })
+                    ) for i in sorted(self.states.keys(), reverse=True)
                 )
             ]
         )
@@ -122,7 +122,7 @@ class BlogWorkflow(BaseWorkflow):
     """
 
     states = { 0: 'public', 1: 'draft' }
-    styles = {  0: 'label label-success', 1: 'label label-danger' }
+    styles = {  0: 'badge badge-success', 1: 'badge badge-danger' }
 
     def is_manageable(self, node, request):
         user = request.user
@@ -159,8 +159,8 @@ class GroupwareWorkflow(BaseWorkflow):
     """
 
     states = { 0: 'public', 1: 'protected', 2: 'restricted', 3: 'private' }
-    styles = {  0: 'label label-success', 1: 'label label-info',
-                2: 'label label-warning', 3: 'label label-danger '}
+    styles = {  0: 'badge badge-success', 1: 'badge badge-info',
+                2: 'badge badge-warning', 3: 'badge badge-danger '}
 
     def __init__(self, networks = ['127.0.0.0/8', '10.0.0.0/8', '192.168.0.0/16']):
         super().__init__()
@@ -252,8 +252,8 @@ class PublicWorkflow(BaseWorkflow):
     """
 
     states = { 0: 'public', 1: 'restricted', 2: 'editor', 3: 'reviewer', 4: 'draft' }
-    styles = {  0: 'label label-success', 1: 'label label-info', 2: 'label label-info',
-                3: 'label label-warning', 4: 'label label-danger '}
+    styles = {  0: 'badge badge-success', 1: 'badge badge-info', 2: 'badge badge-info',
+                3: 'badge badge-warning', 4: 'badge badge-danger '}
 
     def __init__(self):
         pass
@@ -322,8 +322,8 @@ class SiteWorkflow(BaseWorkflow):
     """
 
     states = { 0: 'public', 1: 'restricted', 2: 'protected' }
-    styles = {  0: 'label label-success', 1: 'label label-info',
-                2: 'label label-danger '}
+    styles = {  0: 'badge badge-success', 1: 'badge badge-info',
+                2: 'badge badge-danger '}
 
     def __init__(self):
         pass
@@ -357,7 +357,7 @@ class InheritedWorkflow(BaseWorkflow):
     """
 
     states = { 0: 'Not Applicable' }
-    styles = { 0: 'label label-info'}
+    styles = { 0: 'badge badge-info'}
 
     def is_manageable(self, node, request):
         parent_node = self.get_parent_node(node)
