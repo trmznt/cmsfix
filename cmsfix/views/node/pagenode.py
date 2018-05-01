@@ -65,6 +65,12 @@ class PageNodeViewer(NodeViewer):
 
         if 'cmsfix-options' in f:
             d['view'] = True if 'cmsfix-view' in f else False
+            d['flags-on'] = d['flags-off'] = 0
+            if 'cmsfix-inmenu' in f:
+                d['flags-on'] = d['flags-on'] | self.node.f_inmenu
+            else:
+                d['flags-off'] = d['flags-off'] | self.node.f_inmenu
+
 
         return d
 
@@ -84,7 +90,10 @@ class PageNodeViewer(NodeViewer):
             input_textarea('cmsfix-keywords', 'Keywords', value=n.keywords, offset=1, size='2x8'),
         )
 
-        eform.get('cmsfix-option-group').add( checkbox_item('cmsfix-view', 'View as index', n.view ))
+        eform.get('cmsfix-option-group').add( 
+            checkbox_item('cmsfix-view', 'View as index', n.view ),
+            checkbox_item('cmsfix-inmenu', 'In Menu', n.check_flags(n.f_inmenu)),
+        )
         eform.get('cmsfix-mimetype_id').attrs['onChange'] = 'set_editor(this.value);'
         jscode += 'var html_mimetype=%d;\n' % dbh.EK.getid('text/html', dbh.session())
 

@@ -124,6 +124,11 @@ class Node(BaseMixIn, Base):
         if 'listed' in obj:
             self.listed = bool(obj['listed'])
 
+        if 'flags-on' in obj:
+            self.flags |= obj['flags-on']
+        if 'flags-off' in obj:
+            self.flags &= ~ obj['flags-off']
+
 
     def clear(self):
         """ this clear all child nodes and perform necessary cleanup """
