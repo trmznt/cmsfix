@@ -107,6 +107,7 @@ class Node(BaseMixIn, Base):
         else:
             self.uuid = UUID
         self._versioning = None
+        self.flags = 0
 
         super().__init__(**kwargs)
 
