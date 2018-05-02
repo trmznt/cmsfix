@@ -141,7 +141,7 @@ class NodeViewer(object):
             table_body.add(
                 tr(
                     td(literal('<input type="checkbox" name="node-ids" value="%d">' % n.id)),
-                    td(a(n.title or n.slug, href=request.route_url('node-index', path=n.url))),
+                    td(a(n.title or n.slug, href=request.route_url('node-content', path=n.url))),
                     td(n.id),
                     td(n.__class__.__name__),
                     td(n.user.login),
