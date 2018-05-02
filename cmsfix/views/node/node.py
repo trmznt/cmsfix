@@ -294,7 +294,7 @@ class NodeViewer(object):
         )
 
 
-    def breadcrumb(self, request):
+    def breadcrumb_xxx(self, request):
 
         leaf = self.node
         slugs = []
@@ -328,10 +328,10 @@ class NodeViewer(object):
         html = ol(class_='breadcrumb')
         for (title, url) in slugs:
             html.add(
-                li(a(title, href=url))
+                li(a(title, href=url), class_='breadcrumb-item')
             )
 
-        return html
+        return nav(html)
 
 
     def toolbar(self, request, workflow=None):
