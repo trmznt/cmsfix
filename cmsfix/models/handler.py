@@ -10,6 +10,7 @@ class DBHandler(rho_handler.DBHandler):
 
     Site = node.Site
     Node = node.Node
+    Tag = node.Tag
     PageNode = pagenode.PageNode
     FileNode = filenode.FileNode
     JournalNode = journalnode.JournalNode
@@ -57,5 +58,15 @@ class DBHandler(rho_handler.DBHandler):
 
         if 'level' in kwargs:
             q = q.filter( _type.level == kwargs['level'] )
+
+        if 'flags' in kwargs:
+            q = q.filter( _type.flags.op('&')(kwargs['flags']) == kwargs['flags'] )
+
+        if 'tags' in kwargs:
+            # get the tag id
+            tags = kwargs['tags']
+            tags = [ tags ] if type(tags) != list else tags
+            ek_ids = self.EK.getids( tags, grp='@TAG', dbsession=self.session())
+            q = q.join(self.Tag).filter(self.Tag.tag_id.in_(ek_ids))
 
         return q

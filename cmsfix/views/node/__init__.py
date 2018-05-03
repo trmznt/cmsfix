@@ -224,6 +224,22 @@ def tag_lookup(request):
 
     q = '%' + q.lower() + '%'
 
+    dbh = get_dbhandler()
+    g_key = dbh.get_ekey('@TAG')
+
+    ekeys = dbh.EK.query(dbh.session()).filter( dbh.EK.key.ilike(q),
+            dbh.EK.member_of_id == g_key.id)
+
+    # formating for select2 consumption
+
+    result = [
+        { 'id': k.id, 'text': '%s [ %s ]' % (k.key, k.desc) }
+        for k in ekeys]
+
+    return result
+
+
+
     result = [ { 'id': 'abc', 'text': 'abc'} ]
 
     return result

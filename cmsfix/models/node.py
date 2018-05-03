@@ -125,6 +125,13 @@ class Node(BaseMixIn, Base):
         if 'listed' in obj:
             self.listed = bool(obj['listed'])
 
+        # tags
+        if 'tags' in obj:
+            if not self.id:
+                raise RuntimeError('FATAL ERR: node does not have id while performing tagging')
+            Tag.sync_tags( self.id, obj['tags'], session = object_session(self) )
+
+        # flags
         if 'flags-on' in obj:
             self.flags |= obj['flags-on']
         if 'flags-off' in obj:
@@ -393,11 +400,52 @@ class Tag(Base):
     node = relationship(Node, uselist=False, backref=backref('tags'))
 
     tag_id = Column(types.Integer, ForeignKey('eks.id'), nullable=False, index=True)
+    tag = relationship(EK, uselist=False)
 
     user_id = Column(types.Integer, ForeignKey('users.id'))
 
     __table_args__ = (  UniqueConstraint('node_id', 'tag_id'), )
 
+
+    @classmethod
+    def sync_tags(cls, node_id, tag_ids, user_id = None, session = None):
+        # synchronize node_id and tag_ids
+
+        # check user_id first
+        if not user_id:
+            user_id = get_userid()
+
+        if not session:
+            session = get_dbhandler().session()
+
+        tags = cls.query(session).filter(cls.node_id == node_id)
+        in_sync = []
+        for tag in tags:
+            if tag.tag_id in tag_ids:
+                in_sync.append( tag.tag_id )
+            else:
+                # remove this tag
+                session.delete(tag)
+
+        print(in_sync)
+        for tag_id in tag_ids:
+            if tag_id in in_sync: continue
+            print('add %d' % tag_id)
+            cls.add_tag(node_id, tag_id, user_id, session)
+
+
+    @classmethod
+    def add_tag(cls, node_id, tag_id, user_id, session):
+        tag = cls(node_id = node_id, tag_id = tag_id, user_id = user_id)
+        if not session:
+            session = get_dbhandler().session()
+        session.add(tag)
+
+
+    @classmethod
+    def remove_tag(cls, node_id, tag_id, user_id, session):
+        tag = cls.query().filter(cls.node_id == node_id, cls.tag_id == tag_id).one()
+        session.delete(tag)
 
 
 ## container related

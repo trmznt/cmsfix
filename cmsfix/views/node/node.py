@@ -215,8 +215,8 @@ class NodeViewer(object):
         if 'cms-expire_time' in f:
             d['expire_time'] = f.get('cmsfix-expire_time')
         d['mimetype_id'] = int(f.get('cmsfix-mimetype_id', 0))
-        if 'tags' in f:
-            d['tags'] = f.getall('cmsfix-tags')
+        if 'cmsfix-tags' in f:
+            d['tags'] = [ int(i) for i in f.getall('cmsfix-tags') ]
         if 'cmsfix-options' in f:
             d['listed'] = True if 'cmsfix-listed' in f else False
 
@@ -227,6 +227,11 @@ class NodeViewer(object):
 
         dbh = get_dbhandler()
         node = self.node
+
+        # prepare tags
+        tags = node.tags
+        tag_ids = [ t.tag_id for t in tags ]
+        tag_options = [ (t.tag_id, '%s [ %s ]' % (t.tag.key, t.tag.desc)) for t in tags ]
 
         eform = form( name='cmsfix/node', method=POST )
         eform.add(
@@ -249,7 +254,8 @@ class NodeViewer(object):
             fieldset(name='cmsfix.node-main'),
 
             fieldset(
-                input_select('cmsfix-tags', 'Tags', offset=1, multiple=True),
+                input_select('cmsfix-tags', 'Tags', offset=1, multiple=True,
+                    options = tag_options, value = tag_ids ),
                 # below is a mean to flag that we have options in the form
                 input_hidden(name='cmsfix-options', value=1),
                 checkboxes('cmsfix-option-group', 'Options', [
@@ -268,8 +274,8 @@ class NodeViewer(object):
             ajax: {
                 url: "%s",
                 dataType: 'json',
-                data: function(term, page) { return { q: term }; },
-                results: function(data, page) { return { results: data }; }
+                data: function(params) { return { q: params.term }; },
+                processResults: function(data, params) { return { results: data }; }
             }
         });
         
