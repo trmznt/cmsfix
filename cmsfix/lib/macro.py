@@ -133,7 +133,7 @@ def M_Img(node, components):
 
 
 @macro
-def M_ListNode(node, components);
+def M_ListNode(node, components):
 
     kwargs = {}
     for c in components:
@@ -142,7 +142,7 @@ def M_ListNode(node, components);
         elif c.startswith('tags='):
             kwargs['tags'] = c[5:].split(';')
 
-    nodes = get_dbhandler().get_nodes(None, **kwargs)
+    nodes = get_dbhandler().get_nodes(**kwargs)
     html = div()
     toc = ul()
 
