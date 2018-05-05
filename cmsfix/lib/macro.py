@@ -3,7 +3,15 @@ from rhombus.lib.utils import get_dbhandler
 from rhombus.lib.tags import *
 import re
 
+# the pattern below is either
+# ///123
+# <<MacroName>>
+# [[MacroName]]
 pattern = re.compile('///(\d+)|\&lt\;\&lt\;(.+)\&gt\;\&gt\;|\[\[(.+)\]\]')
+
+
+# syntax for Macro is:
+# [[MacroName|option1|option2|option3]]
 
 def postrender(buffer, node):
     """ return a new buffer """
@@ -122,3 +130,27 @@ def M_Img(node, components):
         #return '[[ Invalid image macro (%s) ]]' % path
 
     return literal('<img src="%s" />' % url)
+
+
+@macro
+def M_ListNode(node, components);
+
+    kwargs = {}
+    for c in components:
+        if c.startswith('level='):
+            kwargs['level'] = int(c[6:])
+        elif c.startswith('tags='):
+            kwargs['tags'] = c[5:].split(';')
+
+    nodes = get_dbhandler().get_nodes(None, **kwargs)
+    html = div()
+    toc = ul()
+
+    for n in nodes:
+        toc.add(
+            li(a(n.title, href=n.path))
+        )
+
+    html.add(toc)
+    return html
+
