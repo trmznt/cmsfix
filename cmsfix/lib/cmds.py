@@ -1,8 +1,10 @@
 # cmds.py
 # shell-like commands
 
-from rhombus.lib.utils import get_dbhandler
+from rhombus.lib.utils import get_dbhandler, cout, cerr
 from cmsfix.models.node import Node, object_session
+
+import os
 
 
 def get_node(arg):
@@ -50,6 +52,21 @@ def mv(a_node, dest_node):
 
 def rm(a_node, opts=None):
 	""" remove a_node, recursively if needed """
+	pass
+
+
+def dump(target_dir, node=None):
+	""" dump node and its child to target dir """
+	if node == None: node = get_node('/')
+	dir_name = target_dir + node.path
+	cerr('Dumping node [%s]' % node.path)
+	node.dump(dir_name)
+
+	for n in node.children:
+		dump(target_dir, n)
+	
+
+def load(source_dir):
 	pass
 
 # end of file

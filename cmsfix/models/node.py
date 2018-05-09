@@ -3,12 +3,15 @@ from rhombus.models.core import *
 from rhombus.models.ek import EK
 from rhombus.models.user import User, Group
 from rhombus.lib.roles import *
+from rhombus.lib.utils import cerr, cout
 from sqlalchemy.sql import func
 from sqlalchemy.ext.orderinglist import ordering_list
 import posixpath, time, difflib, yaml
 
 from sqlalchemy_utils.types.uuid import UUIDType
 from sqlalchemy_utils.types.json import JSONType
+
+import os
 
 
 ## the models employed Rhombus' BaseMixIn to provide id, lastuser_id and stamp
@@ -125,6 +128,9 @@ class Node(BaseMixIn, Base):
         if 'listed' in obj:
             self.listed = bool(obj['listed'])
 
+        if 'json_code' in obj:
+            self.json_code = obj['json_code']
+
         # tags
         if 'tags' in obj:
             if not self.id:
@@ -220,16 +226,28 @@ class Node(BaseMixIn, Base):
     @classmethod
     def container(cls, item_cls):
         global _containers_
+        register_nodeclass(item_cls)
         try:
             _containers_[cls].append( item_cls )
         except KeyError:
             _containers_[cls] = [ item_cls ]
         return item_cls
 
+    @classmethod
+    def explicit_container(cls, item_cls):
+        global _explicit_containers_
+        register_nodeclass(item_cls)
+        try:
+            _explicit_containers_[cls].append( item_cls )
+        except KeyError:
+            _explicit_containers_[cls] = [ item_cls ]
+        return item_cls
+
 
     @classmethod
     def inherited_container(cls, item_cls):
         global _inherited_containers_
+        register_nodeclass(item_cls)
         try:
             _inherited_containers_[cls].append( item_cls )
         except KeyError:
@@ -237,17 +255,33 @@ class Node(BaseMixIn, Base):
         return item_cls
 
 
-    @classmethod
-    def get_item_classes(cls):
-        global _containers_, _inherited_containers_
-        if hasattr(cls, '__strict_container__') and cls.__strict_container__ != None:
-            return cls.__strict_container__
-        cls_set = _containers_.get(cls, [])
+    def get_item_classes(self):
+        global _containers_, _inherited_containers_, _explicit_containers_
+        if hasattr(self, '__strict_container__') and self.__strict_container__ != None:
+            return self.__strict_container__
+        #raise RuntimeError
+        if 'strict_container' in self.json_code:
+            classnames = self.json_code['strict_container']
+            classitems = ( _containers_.get(self.__class__, [])
+                            + self.get_inherited_item_classes()
+                            + _explicit_containers_.get(self.__class__, [])
+                        )
+            classitems_d = {}
+            for classitem in classitems:
+                classitems_d[classitem.__name__] = classitem
+            return [ classitems_d[n] for n in classnames ]
+        cls_set = _containers_.get(self.__class__, [])
         for c,l in _inherited_containers_.items():
-            if issubclass(cls, c):
+            if issubclass(self.__class__, c):
                 cls_set = cls_set + l
         return cls_set
 
+    def get_inherited_item_classes(self):
+        cls_set = []
+        for c,l in _inherited_containers_.items():
+            if issubclass(self.__class__, c):
+                cls_set = cls_set + l
+        return cls_set
 
     @classmethod
     def search(cls, text, site_id):
@@ -286,13 +320,44 @@ class Node(BaseMixIn, Base):
         return yaml.dump(self.as_dict(), default_flow_style=False)
 
     @classmethod
-    def from_dict(d, obj=None):
+    def from_dict(cls, d, obj=None):
         if not obj:
-            obj = Node()
+            obj = cls()
         obj.update(d)
         # update the low-level data
         obj.user = None
         obj.group = None
+        return obj
+
+
+    # export/import
+
+    def dump(self, target_dir):
+        if not os.path.exists(target_dir):
+            os.makedirs(target_dir)
+        with open(target_dir + '/_c.yaml', 'w') as f:
+            f.write( self.as_yaml() )
+
+    @classmethod
+    def _load(cls, d, source_dir):
+
+        # restore user & group
+        dbh = get_dbhandler()
+        user = dbh.get_user(d['user'])
+        d['user_id'] = user.id
+        group = dbh.get_group(d['group'])
+        d['group_id'] = group.id
+
+        # recreate node
+        n = cls.from_dict(d)
+        return n
+
+    @staticmethod
+    def load(source_dir):
+        with open(source_dir + '/_c.yaml') as f:
+            d = yaml.load(f.read())
+        nodeclass = _nodeclasses_[ d['_type_'] ]
+        return nodeclass._load(d, source_dir)
 
 
     def ascendant(self, node):
@@ -449,17 +514,31 @@ class Tag(Base):
 
 
 ## container related
+## the structure for below variabels is:
+## d[cls] = [ cls1, cls2, ... ]
 
 _containers_ = {}
 _inherited_containers_ = {}
+_explicit_containers_ = {}
 
 def self_container(item_cls):
     global _containers_
+    register_nodeclass(item_cls)
     try:
         _containers_[item_cls].append( item_cls )
     except KeyError:
         _containers_[item_cls] = [ item_cls ]
     return item_cls
+
+
+_nodeclasses_ = {}
+
+def register_nodeclass(cls):
+    global _nodeclasses_
+    cerr('Registering [%s]' % cls.__name__)
+    if not cls.__name__ in _nodeclasses_:
+        _nodeclasses_[cls.__name__] = cls
+
 
 
 __NOTE__ = '''
