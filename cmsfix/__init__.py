@@ -69,6 +69,9 @@ def includeme( config ):
     config.add_route('node-info', '{path:.*}@@info')
     config.add_view('cmsfix.views.node.info', route_name='node-info')
 
+    config.add_route('node-properties', '{path:.*}@@properties')
+    config.add_view('cmsfix.views.node.properties', route_name='node-properties')
+
     config.add_route('node-manage', '{path:.*}@@manage')
     config.add_view('cmsfix.views.node.manage', route_name='node-manage')
 
