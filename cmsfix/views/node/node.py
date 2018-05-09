@@ -13,6 +13,8 @@ from cmsfix.views.node import get_toolbar, get_node, get_add_menu
 
 from pyramid.renderers import render_to_response
 
+import json
+
 
 class NodeViewer(object):
 
@@ -109,6 +111,24 @@ class NodeViewer(object):
         req = request or self.request
         return self.render_info(req)
 
+
+    def properties(self, request=None):
+        req = request or self.request
+
+        n = self.node
+        if req.method == 'POST':
+            # update data
+
+            n.update( self.parse_form(req.params) )
+
+            print(n.url)
+            return HTTPFound(location = req.route_url('node-properties', path=n.url))
+
+        pform, jscode = self.properties_form(req)
+
+        return self.render_properties_form(req, pform, jscode)
+
+
     def action(self, request=None):
         req = request or self.request
 
@@ -199,6 +219,21 @@ class NodeViewer(object):
                 }, request = request )
 
 
+    def render_properties_form(self, request, pform, jscode):
+        """ properties form """
+
+        node = self.node
+
+        return render_to_response(self.template_edit,
+            {   'parent_url': ('/' + node.parent.url) if node.parent else 'None',
+                'node': node,
+                'breadcrumb': self.breadcrumb(request),
+                'stickybar': self.statusbar(request),
+                'eform': pform,
+                'code': jscode,
+            }, request = request )
+
+
     # editing methods
 
     def parse_form(self, f, d=None):
@@ -214,11 +249,14 @@ class NodeViewer(object):
             d['publish_time'] = f.get('cmsfix-publish_time')
         if 'cms-expire_time' in f:
             d['expire_time'] = f.get('cmsfix-expire_time')
-        d['mimetype_id'] = int(f.get('cmsfix-mimetype_id', 0))
+        if 'cmsfix-mimetype_id' in f:
+            d['mimetype_id'] = int(f.get('cmsfix-mimetype_id', 0))
         if 'cmsfix-tags' in f:
             d['tags'] = [ int(i) for i in f.getall('cmsfix-tags') ]
         if 'cmsfix-options' in f:
             d['listed'] = True if 'cmsfix-listed' in f else False
+        if 'cmsfix-json_code' in f:
+            d['json_code'] = json.loads(f.get('cmsfix-json_code'))
 
         return d
 
@@ -282,6 +320,68 @@ class NodeViewer(object):
         ''' % request.route_url('tag-lookup')
 
         return eform, jscode
+
+
+    def properties_form(self, request, static=False):
+
+        dbh = get_dbhandler()
+        node = self.node
+
+        # prepare tags
+        tags = node.tags
+        tag_ids = [ t.tag_id for t in tags ]
+        tag_options = [ (t.tag_id, '%s [ %s ]' % (t.tag.key, t.tag.desc)) for t in tags ]
+
+        pform = form( name='cmsfix/node', method=POST )
+        pform.add(
+
+            self.hidden_fields( request, node ),
+
+            fieldset(
+                input_text('cmsfix-slug', 'Slug', value=node.slug, offset=1),
+                multi_inputs(name='cmsfix-group-user-type')[
+                input_select('cmsfix-group_id', 'Group', value=node.group_id, offset=1, size=2,
+                    options = [ (g.id, g.name) for g in dbh.get_group() ]),
+                input_select('cmsfix-user_id', 'User', value=node.user_id, offset=1, size=2,
+                    options = [ (u.id, u.login) for u in dbh.get_user(request.user.id).group_users() ]),
+                input_select_ek('cmsfix-mimetype_id', 'MIME type', value=node.mimetype_id,
+                    parent_ek = dbh.get_ekey('@MIMETYPE'), offset=1, size=2),
+                ],
+                name='cmsfix.node-header'
+            ),
+
+            fieldset(name='cmsfix.node-main'),
+
+            fieldset(
+                input_select('cmsfix-tags', 'Tags', offset=1, multiple=True,
+                    options = tag_options, value = tag_ids ),
+                # below is a mean to flag that we have options in the form
+                input_hidden(name='cmsfix-options', value=1),
+                checkboxes('cmsfix-option-group', 'Options', [
+                    ('cmsfix-listed', 'Listed', node.listed),
+                ], offset=1 ),
+                input_textarea('cmsfix-json_code', 'JSON Code', value=node.json_code, offset=1, size='5x8'),
+                custom_submit_bar(('Save', 'save')).set_offset(1),
+                name='cmsfix.node-footer'
+            )
+        )
+
+        jscode = '''
+        $("#cmsfix-tags").select2({
+            tags: true,
+            tokenSeparators: [',',' '],
+            minimumInputLength: 3,
+            ajax: {
+                url: "%s",
+                dataType: 'json',
+                data: function(params) { return { q: params.term }; },
+                processResults: function(data, params) { return { results: data }; }
+            }
+        });
+
+        ''' % request.route_url('tag-lookup')
+
+        return pform, jscode
 
 
     def pre_save_node(self, request):
@@ -410,6 +510,11 @@ class NodeViewer(object):
                         li(
                             a('Info', href=request.route_url('node-info', path=n.url),
                                 class_='nav-link'), class_='nav-item'),
+
+                        li(
+                            a('Properties', href=request.route_url('node-properties', path=n.url),
+                                class_='nav-link'), class_='nav-item'),
+
                         get_add_menu(n, request),
                     ],
                     ul(class_='navbar-nav')[

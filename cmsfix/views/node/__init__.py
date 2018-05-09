@@ -83,6 +83,23 @@ def info(request):
             }, request = request )
 
 
+@roles(PUBLIC)
+def properties(request):
+
+    n = get_node(request)
+    wf = get_workflow(n)
+
+    if not wf.is_manageable(n, request):
+        return error_page(request, 'You are not authorized to view this node properties')
+
+    # check stamp consistency
+    result = check_stamp(request, n)
+    if result != True: return result
+
+    viewer = get_viewer(n.__class__)
+    return viewer(n, request).properties()
+
+
 def manage(request):
     pass
 
@@ -264,9 +281,15 @@ __NODECLASSES__ = {}
 def register_viewer(nodeclass, viewerclass):
     global __VIEWERS__, __NODECLASSES__
     __VIEWERS__[nodeclass] = viewerclass
+    __NODECLASSES__[getattr(nodeclass, '__label__', nodeclass.__name__)] = nodeclass
+
 
 def get_viewer(nodeclass):
     return __VIEWERS__[nodeclass]
+
+
+def get_class(label):
+    return __NODECLASSES__[label]
 
 
 def get_path(request):
