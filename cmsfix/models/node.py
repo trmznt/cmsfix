@@ -3,7 +3,7 @@ from rhombus.models.core import *
 from rhombus.models.ek import EK
 from rhombus.models.user import User, Group
 from rhombus.lib.roles import *
-from rhombus.lib.utils import cerr, cout
+from rhombus.lib.utils import cerr, cout, get_dbhandler
 from sqlalchemy.sql import func
 from sqlalchemy.ext.orderinglist import ordering_list
 import posixpath, time, difflib, yaml
@@ -117,17 +117,27 @@ class Node(BaseMixIn, Base):
 
     def update(self, obj):
 
+        if 'site_id' in obj:
+            self.site_id = obj['site_id']
         if 'slug' in obj and obj['slug']:
             self.slug = obj['slug']
+        if 'path' in obj and obj['path']:
+            self.path = obj['path']
         if 'user_id' in obj and type(obj['user_id']) == int:
             self.user_id = obj['user_id']
+        if 'lastuser_id' in obj and type(obj['lastuser_id']) == int:
+            self.lastuser_id = obj['lastuser_id']
         if 'group_id' in obj and type(obj['group_id']) == int:
             self.group_id = obj['group_id']
         if 'mimetype_id' in obj and type(obj['mimetype_id']) == int:
             self.mimetype_id = obj['mimetype_id']
         if 'listed' in obj:
             self.listed = bool(obj['listed'])
+        if 'level' in obj:
+            self.level = int(obj['level'])
 
+        if 'ordering' in obj:
+            self.ordering = int(obj['ordering'])
         if 'json_code' in obj:
             self.json_code = obj['json_code']
 
@@ -303,7 +313,8 @@ class Node(BaseMixIn, Base):
             level = self.level,
             parent_url = self.parent.url if self.parent else '',
             ordering = self.ordering,
-            user = self.user.login,
+            user = '%s/%s' % (self.user.login, self.user.userclass.domain),
+            lastuser = '%s/%s' % (self.lastuser.login, self.lastuser.userclass.domain),
             group = self.group.name,
             create_time = self.create_time,
             publish_time = self.publish_time,
@@ -323,10 +334,11 @@ class Node(BaseMixIn, Base):
     def from_dict(cls, d, obj=None):
         if not obj:
             obj = cls()
+            cerr('Created instance of [%s]' % obj.__class__.__name__)
         obj.update(d)
         # update the low-level data
-        obj.user = None
-        obj.group = None
+        #obj.user = None
+        #obj.group = None
         return obj
 
 
@@ -343,13 +355,21 @@ class Node(BaseMixIn, Base):
 
         # restore user & group
         dbh = get_dbhandler()
+        d['site_id'] = dbh.get_site(d['site']).id
         user = dbh.get_user(d['user'])
+        print(user)
         d['user_id'] = user.id
+        lastuser = dbh.get_user(d.get('lastuser', d['user']))
+        d['lastuser_id'] = lastuser.id
         group = dbh.get_group(d['group'])
         d['group_id'] = group.id
+        mimetype = dbh.get_ekey(d['mimetype'])
+        d['mimetype_id'] = mimetype.id
 
         # recreate node
         n = cls.from_dict(d)
+        print(n)
+        dbh.session().add(n)
         return n
 
     @staticmethod
@@ -357,6 +377,7 @@ class Node(BaseMixIn, Base):
         with open(source_dir + '/_c.yaml') as f:
             d = yaml.load(f.read())
         nodeclass = _nodeclasses_[ d['_type_'] ]
+        print('NodeClass:', nodeclass)
         return nodeclass._load(d, source_dir)
 
 
@@ -462,10 +483,10 @@ class Tag(Base):
     id = Column(types.Integer, primary_key=True)
 
     node_id = Column(types.Integer, ForeignKey('nodes.id'), nullable=False, index=True)
-    node = relationship(Node, uselist=False, backref=backref('tags'))
+    node = relationship(Node, uselist=False, backref=backref('tags', cascade='delete, delete-orphan'))
 
     tag_id = Column(types.Integer, ForeignKey('eks.id'), nullable=False, index=True)
-    tag = relationship(EK, uselist=False)
+    tag = relationship(EK, uselist=False, )
 
     user_id = Column(types.Integer, ForeignKey('users.id'))
 

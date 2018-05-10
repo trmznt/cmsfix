@@ -76,6 +76,35 @@ class FileNode(Node):
     def title(self):
         return self.slug
 
+    def as_dict(self):
+        d = super().as_dict()
+        d['desc'] = self.desc
+        d['size'] = self.size
+        d['filename'] = self.filename
+        return d
+
+    @classmethod
+    def from_dict(cls, d, obj=None):
+        if not obj:
+            obj = cls()
+        obj = super().from_dict(d, obj)
+        # update content
+        return obj
+
+    @classmethod
+    def _load(cls, d, source_dir):
+        node = super()._load(d, source_dir)
+        with open(source_dir + '/_c.bin', 'rb') as f:
+            node.write(f)
+        return node
+
+    def dump(self, target_dir):
+        super().dump(target_dir)
+        # write content
+        with open(target_dir + '/_c.bin', 'wb') as f:
+            f.write( self.fp.read() )
+
+
     def search_text(self):
         return self.desc
 

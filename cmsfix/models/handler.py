@@ -24,6 +24,10 @@ class DBHandler(rho_handler.DBHandler):
             setup( self )
             cerr('[cmsfix] Database has been initialized.')
 
+    def get_site(self, fqdn):
+        q = self.Site.query(self.session()).filter( self.Site.fqdn == fqdn )
+        return q.one()
+
 
     def get_node(self, key, default=None):
         if key.startswith('/'):

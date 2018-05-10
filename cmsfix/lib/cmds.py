@@ -4,7 +4,7 @@
 from rhombus.lib.utils import get_dbhandler, cout, cerr
 from cmsfix.models.node import Node, object_session
 
-import os
+import os, transaction
 
 
 def get_node(arg):
@@ -52,11 +52,14 @@ def mv(a_node, dest_node):
 
 def rm(a_node, opts=None):
 	""" remove a_node, recursively if needed """
-	pass
+	sess = object_session(a_node)
+	if not sess:
+		sess = get_dbhandler().session()
+	sess.delete( a_node )
 
 
 def dump(target_dir, node=None):
-	""" dump node and its child to target dir """
+	""" dump node and its children to target dir """
 	if node == None: node = get_node('/')
 	dir_name = target_dir + node.path
 	cerr('Dumping node [%s]' % node.path)
@@ -67,6 +70,19 @@ def dump(target_dir, node=None):
 	
 
 def load(source_dir):
-	pass
+	""" load node and its children from source_dir """
+	cerr('Loading from path: %s' % source_dir)
+	node = get_dbhandler().Node.load(source_dir)
+
+	for d in os.listdir(source_dir):
+		path = source_dir + '/' + d
+		if os.path.isdir(path):
+			n = load(path)
+			n.parent = node
+
+	return node
+
+
+
 
 # end of file

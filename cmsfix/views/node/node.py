@@ -166,7 +166,7 @@ class NodeViewer(object):
                     td(n.__class__.__name__),
                     td(n.user.login),
                     td(str(n.stamp)),
-                    td(n.lastuser.login),
+                    td(n.lastuser.login if n.lastuser else '-'),
                     td( span(wf.states[n.state], class_=wf.styles[n.state]) )
                 )
             )
