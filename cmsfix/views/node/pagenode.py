@@ -55,11 +55,11 @@ class PageNodeViewer(NodeViewer):
     def parse_form(self, f, d=None):
 
         d = super().parse_form(f, d)
-        if 'title' in f:
+        if 'cmsfix-title' in f:
             d['title'] = f['cmsfix-title']
-        if 'content' in f:
+        if 'cmsfix-content' in f:
             d['content'] = f['cmsfix-content']
-        if 'summary' in f:
+        if 'cmsfix-summary' in f:
             d['summary'] = f['cmsfix-summary']
 
         # some of our inherited class might not use keywords
