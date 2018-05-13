@@ -58,31 +58,18 @@ def rm(a_node, opts=None):
 	sess.delete( a_node )
 
 
-def dump(target_dir, node=None):
+def dump(target_dir, node=None, recursive=False):
 	""" dump node and its children to target dir """
-	if node == None: node = get_node('/')
-	dir_name = target_dir + node.path
-	cerr('Dumping node [%s]' % node.path)
-	node.dump(dir_name)
 
-	for n in node.children:
-		dump(target_dir, n)
+	from cmsfix.lib import dumputils
+	return dumputils.dump(target_dir, node, recursive)
 	
 
-def load(source_dir):
+def load(source_dir, archive=False, recursive=False, user=None, group=None):
 	""" load node and its children from source_dir """
-	cerr('Loading from path: %s' % source_dir)
-	node = get_dbhandler().Node.load(source_dir)
 
-	for d in os.listdir(source_dir):
-		path = source_dir + '/' + d
-		if os.path.isdir(path):
-			n = load(path)
-			n.parent = node
-
-	return node
-
-
+	from cmsfix.lib import dumputils
+	return dumputils.load(source_dir, archive, recursive, user, group)
 
 
 # end of file
