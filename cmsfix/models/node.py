@@ -127,6 +127,8 @@ class Node(BaseMixIn, Base):
             self.user_id = obj['user_id']
         if 'lastuser_id' in obj and type(obj['lastuser_id']) == int:
             self.lastuser_id = obj['lastuser_id']
+        if 'stamp' in obj:
+            self.stamp = obj['stamp']
         if 'group_id' in obj and type(obj['group_id']) == int:
             self.group_id = obj['group_id']
         if 'mimetype_id' in obj and type(obj['mimetype_id']) == int:
@@ -306,6 +308,7 @@ class Node(BaseMixIn, Base):
     def as_dict(self):
         return dict(
             _type_ = type(self).__name__,
+            id = self.id,
             site = self.site.fqdn,
             uuid = self.uuid,
             slug = self.slug,
@@ -315,6 +318,7 @@ class Node(BaseMixIn, Base):
             ordering = self.ordering,
             user = '%s/%s' % (self.user.login, self.user.userclass.domain),
             lastuser = '%s/%s' % (self.lastuser.login, self.lastuser.userclass.domain),
+            stamp = self.stamp,
             group = self.group.name,
             create_time = self.create_time,
             publish_time = self.publish_time,
