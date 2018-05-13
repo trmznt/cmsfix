@@ -93,7 +93,7 @@ class IndexService(object):
     def get_updater(self, session):
 
         if hasattr(session, 'ix_updater'):
-            print('initialize updater')
+            cerr('initialize Whoosh updater')
             return getattr(session, 'ix_updater')
 
         updater = Updater()
