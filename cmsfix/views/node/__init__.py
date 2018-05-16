@@ -229,6 +229,20 @@ def action_post(request, node):
 
         return HTTPFound( location = request.referrer or node.path )
 
+    elif method == 'swap-order':
+
+        nodeid1 = int(request.params.get('nodeid1'))
+        nodeid2 = int(request.params.get('nodeid2'))
+        ordering1 = int(request.params.get('ordering1'))
+        ordering2 = int(request.params.get('ordering2'))
+
+        node_1 = dbh.get_nodes_by_id(nodeid1)
+        node_2 = dbh.get_nodes_by_id(nodeid2)
+
+        if node_1.ordering != ordering1 or node_2.ordering != ordering2:
+            pass
+
+
     return error_page(request, 'action post not implemented')
 
 

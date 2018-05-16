@@ -156,7 +156,8 @@ class NodeViewer(object):
 
         node = self.node
         table_body = tbody()
-        for n in node.children:
+        children = list(node.children)
+        for idx, n in enumerate(children):
             wf = get_workflow(n)
             table_body.add(
                 tr(
@@ -167,6 +168,10 @@ class NodeViewer(object):
                     td(n.user.login),
                     td(str(n.stamp)),
                     td(n.lastuser.login if n.lastuser else '-'),
+                    td(a(literal('&#9650;'), href=request.route_url('node-action', path=n.url)),
+                        literal('&nbsp;'),
+                        a(literal('&#9660;'), href=request.route_url('node-action', path=n.url))
+                    ),
                     td( span(wf.states[n.state], class_=wf.styles[n.state]) )
                 )
             )
@@ -182,6 +187,7 @@ class NodeViewer(object):
                     th('User'),
                     th('Last modified'),
                     th('Last user'),
+                    th('Order'),
                     th('State')
                 )
             ),
