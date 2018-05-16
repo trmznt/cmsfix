@@ -14,15 +14,6 @@ class CommentNode(Node):
     __mapper_args__ = { 'polymorphic_identity': 5 }
 
     def update(self, obj):
-
-        if isinstance(obj, dict):
-            super().update(obj)
-
-            if 'content' in obj:
-                self.content = obj['content']
-
-
-    def update(self, obj):
         super().update(obj)
 
         if instance(obj, dict):
