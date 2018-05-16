@@ -29,5 +29,6 @@ def main():
 
     from IPython import embed
     from cmsfix.lib import cmds
+    import transaction
     embed()
 
