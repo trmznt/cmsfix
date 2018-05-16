@@ -17,8 +17,8 @@ class DBHandler(rho_handler.DBHandler):
     JournalItemNode = journalnode.JournalItemNode
 
 
-    def initdb(self, create_table=True, init_data=True):
-        super().initdb(create_table, init_data)
+    def initdb(self, create_table=True, init_data=True, rootpasswd=None):
+        super().initdb(create_table, init_data, rootpasswd)
         if init_data:
             from cmsfix.models.setup import setup
             setup( self )
