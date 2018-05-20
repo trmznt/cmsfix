@@ -138,6 +138,13 @@ class Node(BaseMixIn, Base):
         if 'level' in obj:
             self.level = int(obj['level'])
 
+        if 'create_time' in obj:
+            self.create_time = obj['create_time']
+        if 'publish_time' in obj:
+            self.publish_time = obj['publish_time']
+        if 'expire_time' in obj:
+            self.create_time = obj['expire_time']
+
         if 'ordering' in obj:
             self.ordering = int(obj['ordering'])
         if 'json_code' in obj:
