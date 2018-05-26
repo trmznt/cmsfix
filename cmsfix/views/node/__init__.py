@@ -170,19 +170,49 @@ def action(request):
 
     if request.GET:
 
-        # get
-        if request.GET['_method'] == 'set-state':
-            wf = get_workflow(n)
-            wf.process_menu(n, request)
-
-            # return to referrer
-            return HTTPFound(location = request.referrer)
+        return action_get(request, node)
 
     elif request.POST:
 
         return action_post(request, node)
 
     return error_page(request, 'HTTP method not implemented!')
+
+
+def action_get(request, node):
+
+    # get
+    if request.GET['_method'] == 'set-state':
+        wf = get_workflow(n)
+        wf.process_menu(n, request)
+
+        # return to referrer
+        return HTTPFound(location = request.referrer)
+
+    elif request.GET['_method'] == 'swap-order':
+
+        nodeid1 = int(request.params.get('nodeid1'))
+        nodeid2 = int(request.params.get('nodeid2'))
+        ordering1 = int(request.params.get('ordering1'))
+        ordering2 = int(request.params.get('ordering2'))
+
+        dbh = get_dbhandler()
+
+        node_1 = dbh.get_node_by_id(nodeid1)
+        node_2 = dbh.get_node_by_id(nodeid2)
+
+        if node_1.ordering != ordering1 or node_2.ordering != ordering2:
+            return error_page(request, 'Node order has changed. Please reload page first!')
+
+        node_1.ordering = -1
+        node_2.ordering = -2
+        dbh.session().flush()
+        node_1.ordering = ordering2
+        node_2.ordering = ordering1
+
+        return HTTPFound(location = request.referrer)
+
+    return error_page(request, 'action get not implemented')
 
 
 def action_post(request, node):
@@ -228,19 +258,6 @@ def action_post(request, node):
             '; '.join( str(x) for x in node_ids ))
 
         return HTTPFound( location = request.referrer or node.path )
-
-    elif method == 'swap-order':
-
-        nodeid1 = int(request.params.get('nodeid1'))
-        nodeid2 = int(request.params.get('nodeid2'))
-        ordering1 = int(request.params.get('ordering1'))
-        ordering2 = int(request.params.get('ordering2'))
-
-        node_1 = dbh.get_nodes_by_id(nodeid1)
-        node_2 = dbh.get_nodes_by_id(nodeid2)
-
-        if node_1.ordering != ordering1 or node_2.ordering != ordering2:
-            pass
 
 
     return error_page(request, 'action post not implemented')

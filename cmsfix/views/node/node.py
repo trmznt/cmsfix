@@ -158,6 +158,8 @@ class NodeViewer(object):
         table_body = tbody()
         children = list(node.children)
         for idx, n in enumerate(children):
+            prev_idx = max(0, idx-1)
+            next_idx = min(idx+1, len(children)-1)
             wf = get_workflow(n)
             table_body.add(
                 tr(
@@ -168,9 +170,23 @@ class NodeViewer(object):
                     td(n.user.login),
                     td(str(n.stamp)),
                     td(n.lastuser.login if n.lastuser else '-'),
-                    td(a(literal('&#9650;'), href=request.route_url('node-action', path=n.url)),
+                    td(a(literal('&#9650;'),
+                            href=request.route_url('node-action', path=n.url,
+                            _query = { '_method': 'swap-order',
+                                        'nodeid1': children[idx].id,
+                                        'ordering1': children[idx].ordering,
+                                        'nodeid2': children[prev_idx].id,
+                                        'ordering2': children[prev_idx].ordering,
+                            })),
                         literal('&nbsp;'),
-                        a(literal('&#9660;'), href=request.route_url('node-action', path=n.url))
+                        a(literal('&#9660;'),
+                            href=request.route_url('node-action', path=n.url,
+                            _query = { '_method': 'swap-order',
+                                        'nodeid1': children[idx].id,
+                                        'ordering1': children[idx].ordering,
+                                        'nodeid2': children[next_idx].id,
+                                        'ordering2': children[next_idx].ordering,
+                            }))
                     ),
                     td( span(wf.states[n.state], class_=wf.styles[n.state]) )
                 )
