@@ -193,6 +193,9 @@ def action_get(request, node):
 
         nodeid1 = int(request.params.get('nodeid1'))
         nodeid2 = int(request.params.get('nodeid2'))
+        if nodeid1 == nodeid2:
+            return HTTPFound(location = request.referrer)
+
         ordering1 = int(request.params.get('ordering1'))
         ordering2 = int(request.params.get('ordering2'))
 
