@@ -285,6 +285,11 @@ class NodeViewer(object):
 
     def edit_form(self, request, create=False):
 
+        if create:
+            return self.properties_form(request)
+
+        return self.properties_form(request)
+
         dbh = get_dbhandler()
         node = self.node
 

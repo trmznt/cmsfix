@@ -93,15 +93,30 @@ class PageNodeViewer(NodeViewer):
             input_textarea('cmsfix-keywords', 'Keywords', value=n.keywords, offset=1, size='2x8'),
         )
 
-        eform.get('cmsfix-option-group').add( 
-            checkbox_item('cmsfix-view', 'View as index', n.view ),
-            checkbox_item('cmsfix-inmenu', 'In Menu', n.check_flags(n.f_inmenu)),
-        )
+        #eform.get('cmsfix-option-group').add( 
+        #    checkbox_item('cmsfix-view', 'View as index', n.view ),
+        #    checkbox_item('cmsfix-inmenu', 'In Menu', n.check_flags(n.f_inmenu)),
+        #)
         eform.get('cmsfix-mimetype_id').attrs['onChange'] = 'set_editor(this.value);'
         jscode += 'var html_mimetype=%d;\n' % dbh.EK.getid('text/html', dbh.session())
 
         return eform, jscode
 
+
+    def properties_form(self, request):
+
+        dbh = get_dbhandler()
+        n = self.node
+
+        pform, jscode = super().properties_form(request)
+
+        pform.get('cmsfix-option-group').add( 
+            checkbox_item('cmsfix-view', 'View as index', n.view ),
+            checkbox_item('cmsfix-inmenu', 'In Menu', n.check_flags(n.f_inmenu)),
+        )
+
+
+        return pform, jscode
 
     def editingbar(self, request):
 
