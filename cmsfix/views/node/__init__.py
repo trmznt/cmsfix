@@ -170,18 +170,19 @@ def action(request):
 
     if request.GET:
 
-        return action_get(request, node)
+        return action_get(request, n)
 
     elif request.POST:
 
-        return action_post(request, node)
+        return action_post(request, n)
 
     return error_page(request, 'HTTP method not implemented!')
 
 
 def action_get(request, node):
 
-    # get
+    n = node
+
     if request.GET['_method'] == 'set-state':
         wf = get_workflow(n)
         wf.process_menu(n, request)
