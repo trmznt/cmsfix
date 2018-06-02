@@ -387,7 +387,7 @@ class NodeViewer(object):
                 checkboxes('cmsfix-option-group', 'Options', [
                     ('cmsfix-listed', 'Listed', node.listed),
                 ], offset=1 ),
-                input_textarea('cmsfix-json_code', 'JSON Code', value=node.json_code, offset=1, size='5x8'),
+                input_textarea('cmsfix-json_code', 'JSON Code', value=json.dumps(node.json_code), offset=1, size='5x8'),
                 custom_submit_bar(('Save', 'save')).set_offset(1),
                 name='cmsfix.node-footer'
             )
