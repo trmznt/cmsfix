@@ -278,7 +278,7 @@ class NodeViewer(object):
         if 'cmsfix-options' in f:
             d['listed'] = True if 'cmsfix-listed' in f else False
         if 'cmsfix-json_code' in f:
-            d['json_code'] = json.loads(f.get('cmsfix-json_code'))
+            d['json_code'] = json.loads(f.get('cmsfix-json_code').strip() or '{}')
 
         return d
 
