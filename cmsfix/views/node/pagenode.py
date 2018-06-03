@@ -63,7 +63,7 @@ class PageNodeViewer(NodeViewer):
             d['summary'] = f['cmsfix-summary']
 
         # some of our inherited class might not use keywords
-        if 'keywords' in d:
+        if 'cmsfix-keywords' in f:
             d['keywords'] = f['cmsfix-keywords']
 
         if 'cmsfix-options' in f:
@@ -73,7 +73,6 @@ class PageNodeViewer(NodeViewer):
                 d['flags-on'] = d['flags-on'] | self.node.f_inmenu
             else:
                 d['flags-off'] = d['flags-off'] | self.node.f_inmenu
-
 
         return d
 
@@ -103,12 +102,12 @@ class PageNodeViewer(NodeViewer):
         return eform, jscode
 
 
-    def properties_form(self, request):
+    def properties_form(self, request, create=False):
 
         dbh = get_dbhandler()
         n = self.node
 
-        pform, jscode = super().properties_form(request)
+        pform, jscode = super().properties_form(request, create)
 
         pform.get('cmsfix-option-group').add( 
             checkbox_item('cmsfix-view', 'View as index', n.view ),
@@ -129,8 +128,7 @@ class PageNodeViewer(NodeViewer):
 
 
     def new_node(self):
-
-        n = PageNode()
+        n = super().new_node()
         n.mimetype_id = get_dbhandler().get_ekey('text/x-rst').id
         return n
 
