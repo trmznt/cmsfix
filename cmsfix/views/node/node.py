@@ -8,7 +8,7 @@ from rhombus.lib.utils import random_string
 from cmsfix.lib.workflow import get_workflow
 from cmsfix.lib import cmds
 from cmsfix.views import *
-from cmsfix.views.node import get_toolbar, get_node, get_add_menu
+from cmsfix.views.node import get_toolbar, get_node, get_add_menu, get_class
 
 
 from pyramid.renderers import render_to_response
@@ -245,6 +245,9 @@ class NodeViewer(object):
         """ properties form """
 
         node = self.node
+        pform.get('cmsfix.node-footer').add(
+            custom_submit_bar(('Save', 'save')).set_offset(1),
+            )
 
         return render_to_response(self.template_edit,
             {   'parent_url': ('/' + node.parent.url) if node.parent else 'None',
@@ -286,70 +289,18 @@ class NodeViewer(object):
     def edit_form(self, request, create=False):
 
         if create:
-            return self.properties_form(request)
+            pform, jscode = self.properties_form(request, create=create)
 
-        return self.properties_form(request)
+        else:
+            pform, jscode = self.properties_form(request)
 
-        dbh = get_dbhandler()
-        node = self.node
+        # add node_submit_bar
+        pform.get('cmsfix.node-footer').add( node_submit_bar(create).set_hide(True) )
 
-        # prepare tags
-        tags = node.tags
-        tag_ids = [ t.tag_id for t in tags ]
-        tag_options = [ (t.tag_id, '%s [ %s ]' % (t.tag.key, t.tag.desc)) for t in tags ]
-
-        eform = form( name='cmsfix/node', method=POST )
-        eform.add(
-
-            self.hidden_fields( request, node ),
-            
-            fieldset(
-                input_text('cmsfix-slug', 'Slug', value=node.slug, offset=1),
-                multi_inputs(name='cmsfix-group-user-type')[
-                input_select('cmsfix-group_id', 'Group', value=node.group_id, offset=1, size=2,
-                    options = [ (g.id, g.name) for g in dbh.get_group() ]),
-                input_select('cmsfix-user_id', 'User', value=node.user_id, offset=1, size=2,
-                    options = [ (u.id, u.login) for u in dbh.get_user(request.user.id).group_users() ]),
-                input_select_ek('cmsfix-mimetype_id', 'MIME type', value=node.mimetype_id,
-                    parent_ek = dbh.get_ekey('@MIMETYPE'), offset=1, size=2),
-                ],
-                name='cmsfix.node-header'
-            ),
-
-            fieldset(name='cmsfix.node-main'),
-
-            fieldset(
-                input_select('cmsfix-tags', 'Tags', offset=1, multiple=True,
-                    options = tag_options, value = tag_ids ),
-                # below is a mean to flag that we have options in the form
-                input_hidden(name='cmsfix-options', value=1),
-                checkboxes('cmsfix-option-group', 'Options', [
-                    ('cmsfix-listed', 'Listed', node.listed),
-                ], offset=1 ),
-                node_submit_bar(create).set_hide(True),
-                name='cmsfix.node-footer'
-            )
-        )
-
-        jscode = '''
-        $("#cmsfix-tags").select2({
-            tags: true,
-            tokenSeparators: [',',' '],
-            minimumInputLength: 3,
-            ajax: {
-                url: "%s",
-                dataType: 'json',
-                data: function(params) { return { q: params.term }; },
-                processResults: function(data, params) { return { results: data }; }
-            }
-        });
-        
-        ''' % request.route_url('tag-lookup')
-
-        return eform, jscode
+        return pform, jscode
 
 
-    def properties_form(self, request, static=False):
+    def properties_form(self, request, create=False, static=False):
 
         dbh = get_dbhandler()
         node = self.node
@@ -387,8 +338,8 @@ class NodeViewer(object):
                 checkboxes('cmsfix-option-group', 'Options', [
                     ('cmsfix-listed', 'Listed', node.listed),
                 ], offset=1 ),
-                input_textarea('cmsfix-json_code', 'JSON Code', value=json.dumps(node.json_code), offset=1, size='5x8'),
-                custom_submit_bar(('Save', 'save')).set_offset(1),
+                input_textarea('cmsfix-json_code', 'JSON Code',
+                    value=json.dumps(node.json_code), offset=1, size='5x8'),
                 name='cmsfix.node-footer'
             )
         )
@@ -416,6 +367,9 @@ class NodeViewer(object):
 
     def post_save_node(self, request):
         pass
+
+    def new_node(self):
+        return get_class(type(self))()
 
     def hidden_fields(self, request, node=None):
         node = node or self.node
