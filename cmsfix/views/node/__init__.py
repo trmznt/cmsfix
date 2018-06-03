@@ -312,19 +312,23 @@ def get_module(nodeclass):
 
 __VIEWERS__ = {}
 __NODECLASSES__ = {}
+__NODES__ = {}
 
 def register_viewer(nodeclass, viewerclass):
-    global __VIEWERS__, __NODECLASSES__
+    global __VIEWERS__, __NODECLASSES__, NODES
     __VIEWERS__[nodeclass] = viewerclass
     __NODECLASSES__[getattr(nodeclass, '__label__', nodeclass.__name__)] = nodeclass
+    __NODES__[viewerclass] = nodeclass
 
 
 def get_viewer(nodeclass):
     return __VIEWERS__[nodeclass]
 
 
-def get_class(label):
-    return __NODECLASSES__[label]
+def get_class(label_or_viewer):
+    if type(label_or_viewer) == str:
+        return __NODECLASSES__[label]
+    return __NODES__[label_or_viewer]
 
 
 def get_path(request):
