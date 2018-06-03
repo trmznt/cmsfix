@@ -305,8 +305,9 @@ class NodeViewer(object):
         dbh = get_dbhandler()
         node = self.node
 
-        # prepare tags
-        tags = node.tags
+        # prepare generic tags
+        tag_group = dbh.get_ekey('@TAG')
+        tags = [ t for t in node.tags if t.tag.member_of_id == tag_group.id ]
         tag_ids = [ t.tag_id for t in tags ]
         tag_options = [ (t.tag_id, '%s [ %s ]' % (t.tag.key, t.tag.desc)) for t in tags ]
 

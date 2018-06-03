@@ -497,7 +497,7 @@ class Tag(Base):
     node = relationship(Node, uselist=False, backref=backref('tags', cascade='delete, delete-orphan'))
 
     tag_id = Column(types.Integer, ForeignKey('eks.id'), nullable=False, index=True)
-    tag = relationship(EK, uselist=False, )
+    tag = relationship(EK, uselist=False, foreign_keys=tag_id )
 
     user_id = Column(types.Integer, ForeignKey('users.id'))
 
