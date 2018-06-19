@@ -153,8 +153,16 @@ class Node(BaseMixIn, Base):
         # tags
         if 'tags' in obj:
             if not self.id:
-                raise RuntimeError('FATAL ERR: node does not have id while performing tagging')
-            Tag.sync_tags( self.id, obj['tags'], session = object_session(self) )
+                # this is new object, so we can just attach using SqlAlchemy relationship mechanism
+                user_id = get_userid()
+                session = get_dbhandler().session()
+                with session.no_autoflush:
+                    for tag_id in obj['tags']:
+                        Tag.add_tag(self, tag_id, user_id, session)
+
+                #raise RuntimeError('FATAL ERR: node does not have id while performing tagging')
+            else:
+                Tag.sync_tags( self.id, obj['tags'], session = object_session(self) )
 
         # flags
         if 'flags-on' in obj:
@@ -226,12 +234,14 @@ class Node(BaseMixIn, Base):
 
 
     def add(self, n):
-        if not n.slug:
-            n.generate_slug()
-        n.site_id = self.site_id
-        n.level = self.level + 1
-        self.children.append(n)
-        n.generate_path()
+        with object_session(self).no_autoflush:
+            if not n.slug:
+                n.generate_slug()
+            n.site_id = self.site_id
+            n.level = self.level + 1
+            self.children.append(n)
+            n.generate_path()
+            n.ordering = -1
         object_session(n).flush()
         n.ordering = 19 * n.id
         return n
@@ -288,7 +298,7 @@ class Node(BaseMixIn, Base):
             classitems_d = {}
             for classitem in classitems:
                 classitems_d[classitem.__name__] = classitem
-            return [ classitems_d[n] for n in classnames ]
+            return [ classitems_d[n] for n in classnames if n in classitems_d ]
         cls_set = _containers_.get(self.__class__, [])
         for c,l in _inherited_containers_.items():
             if issubclass(self.__class__, c):
@@ -533,9 +543,12 @@ class Tag(Base):
 
     @classmethod
     def add_tag(cls, node_id, tag_id, user_id, session):
-        tag = cls(node_id = node_id, tag_id = tag_id, user_id = user_id)
         if not session:
             session = get_dbhandler().session()
+        if type(node_id) == int:
+            tag = cls(node_id = node_id, tag_id = tag_id, user_id = user_id)
+        else:
+            tag = cls(node = node_id, tag_id = tag_id, user_id = user_id)
         session.add(tag)
 
 
