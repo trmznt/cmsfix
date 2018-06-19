@@ -263,6 +263,13 @@ def action_post(request, node):
 
         return HTTPFound( location = request.referrer or node.path )
 
+    else:
+
+        ret = get_viewer(node.__class__)(node, request).action_post()
+        if ret == True:
+            return HTTPFound( location = request.referrer or node.path )
+        if ret not in [False, None]:
+            return ret
 
     return error_page(request, 'action post not implemented')
 
@@ -293,6 +300,28 @@ def tag_lookup(request):
 
 
     result = [ { 'id': 'abc', 'text': 'abc'} ]
+
+    return result
+
+
+@roles(PUBLIC)
+def node_lookup(request):
+
+    q = request.params.get('q')
+    if not q:
+        return error_page(request, 'No q parameter!')
+
+    t = request.params.get('t', 'Page').strip()
+    nodetype = get_class(t)
+
+    q = '%' + q.lower() + '%'
+
+    dbh = get_dbhandler()
+    nodes = nodetype.query( dbh.session() ).filter( nodetype.title.ilike(q))
+
+    result = [
+        { 'id': n.id, 'text': '%s' % (n.title) }
+        for n in nodes ]
 
     return result
 
@@ -327,7 +356,7 @@ def get_viewer(nodeclass):
 
 def get_class(label_or_viewer):
     if type(label_or_viewer) == str:
-        return __NODECLASSES__[label]
+        return __NODECLASSES__[label_or_viewer]
     return __NODES__[label_or_viewer]
 
 

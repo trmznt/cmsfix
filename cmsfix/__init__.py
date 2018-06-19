@@ -57,6 +57,9 @@ def includeme( config ):
     config.add_route('tag-lookup', '/tag-lookup')
     config.add_view('cmsfix.views.node.tag_lookup', route_name='tag-lookup', renderer='json')
 
+    config.add_route('node-lookup', '/node-lookup')
+    config.add_view('cmsfix.views.node.node_lookup', route_name='node-lookup', renderer='json')
+
     config.add_route('filenode-upload', '/fileupload/{sesskey:.*}')
     config.add_view('cmsfix.views.node.filenode.fileupload', route_name='filenode-upload', renderer='json')
 
