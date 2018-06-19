@@ -216,6 +216,10 @@ class NodeViewer(object):
 
         html = row( div(content_table, class_='col-md-10') )
 
+        additional_html, additional_js = self.additional_tables()
+        html.add(additional_html)
+        content_js = content_js + additional_js
+
         return render_to_response('cmsfix:templates/node/content.mako',
                 {   'node': node,
                     'breadcrumb': self.breadcrumb(request),
@@ -224,6 +228,8 @@ class NodeViewer(object):
                     'code': content_js,
                 }, request = request )
 
+    def additional_tables(self):
+        return ('', '')
 
     def render_info(self, request):
 
