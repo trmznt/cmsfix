@@ -12,7 +12,7 @@ def dump(target_dir, node=None, recursive=False):
 
 	if recursive:
 		for n in node.children:
-			dump(target_dir, n)	
+			dump(target_dir, n, recursive)	
 
 
 def load(source_dir, archive=False, recursive=False, user=None, group=None):
