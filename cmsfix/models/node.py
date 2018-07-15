@@ -345,6 +345,7 @@ class Node(BaseMixIn, Base):
             listed = self.listed,
             mimetype = self.mimetype,
             json_code = self.json_code,
+            tags = [ t.tag.key for t in self.tags ]
         )
 
 
@@ -386,6 +387,10 @@ class Node(BaseMixIn, Base):
         d['group_id'] = group.id
         mimetype = dbh.get_ekey(d['mimetype'])
         d['mimetype_id'] = mimetype.id
+
+        # modify tags to ids
+        if 'tags' in d:
+            d['tags'] = [ dbh.get_ekey(t).id for t in d['tags'] ]
 
         # recreate node
         n = cls.from_dict(d)
@@ -518,6 +523,12 @@ class Tag(Base):
     def sync_tags(cls, node_id, tag_ids, user_id = None, session = None):
         # synchronize node_id and tag_ids
 
+        # check sanity
+        assert type(node_id) == int
+        for id in tag_ids:
+            if type(id) != int:
+                raise RuntimeError('FATAL ERR: tag_ids must contain ony integers')
+
         # check user_id first
         if not user_id:
             user_id = get_userid()
@@ -543,6 +554,8 @@ class Tag(Base):
 
     @classmethod
     def add_tag(cls, node_id, tag_id, user_id, session):
+        assert type(tag_id) == int
+
         if not session:
             session = get_dbhandler().session()
         if type(node_id) == int:
