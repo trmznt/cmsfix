@@ -208,7 +208,7 @@ class GroupwareWorkflow(BaseWorkflow):
 
     # menu-related methods
 
-    def show_menu(self, node, request):
+    def show_menu_xxx(self, node, request):
         """ based on user authorization, show workflow menu; return a <li> element """
         html = li(class_='dropdown')
         html.add(
@@ -230,7 +230,7 @@ class GroupwareWorkflow(BaseWorkflow):
         return html
 
 
-    def process_menu(self, node, request):
+    def process_menu_xxx(self, node, request):
         """ process request """
 
         state = int(request.params.get('state', 3))
