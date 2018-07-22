@@ -49,6 +49,18 @@ class JournalNode(Node):
                 self.flag = obj['flag']
 
 
+    def as_dict(self):
+        d = super().as_dict()
+        d.update(
+            title = self.title,
+            desc = self.desc,
+            settings = self.settings,
+            order = self.order,
+            #flag = self.flag,
+        )
+        return d
+
+
     def generate_slug(self):
         self.slug = hex(int(time.time()*1e6))[6:]
 
@@ -89,6 +101,17 @@ class JournalItemNode(PageNode):
         if type(obj) == dict:
             if 'log_date' in obj:
                 self.log_date = obj['log_date']
+            if 'version' in obj:
+                self.version = obj['version']
+
+
+    def as_dict(self):
+        d = super().as_dict()
+        d.update(
+            log_date = self.log_date,
+            version = self.version,
+        )
+        return d
 
 
     def generate_slug(self):
