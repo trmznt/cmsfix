@@ -3,10 +3,10 @@ from rhombus.models.core import *
 from rhombus.models.ek import EK
 from rhombus.models.user import User, Group
 from rhombus.lib.roles import *
-from rhombus.lib.utils import cerr, cout, get_dbhandler
+from rhombus.lib.utils import cerr, cout, cexit, get_dbhandler
 from sqlalchemy.sql import func
 from sqlalchemy.ext.orderinglist import ordering_list
-import posixpath, time, difflib, yaml
+import posixpath, time, datetime, difflib, yaml
 
 from sqlalchemy_utils.types.uuid import UUIDType
 from sqlalchemy_utils.types.json import JSONType
@@ -143,7 +143,7 @@ class Node(BaseMixIn, Base):
         if 'publish_time' in obj:
             self.publish_time = obj['publish_time']
         if 'expire_time' in obj:
-            self.create_time = obj['expire_time']
+            self.expire_time = obj['expire_time']
 
         if 'ordering' in obj:
             self.ordering = int(obj['ordering'])
@@ -169,6 +169,10 @@ class Node(BaseMixIn, Base):
             self.flags |= obj['flags-on']
         if 'flags-off' in obj:
             self.flags &= ~ obj['flags-off']
+
+        # state
+        if 'state' in obj:
+            self.state = obj['state']
 
 
     def clear(self):
@@ -379,11 +383,17 @@ class Node(BaseMixIn, Base):
         dbh = get_dbhandler()
         d['site_id'] = dbh.get_site(d['site']).id
         user = dbh.get_user(d['user'])
-        print(user)
+        if not user:
+            cexit('ERR: user %s does not exist!' % d['user'])
         d['user_id'] = user.id
-        lastuser = dbh.get_user(d.get('lastuser', d['user']))
+        d['lastuser'] = d.get('lastuser', d['user'])
+        lastuser = dbh.get_user(d['lastuser'])
+        if not lastuser:
+            cexit('ERR: user %s does not exist!' % d['lastuser'])
         d['lastuser_id'] = lastuser.id
         group = dbh.get_group(d['group'])
+        if not group:
+            cexit('ERR: group %s does not exist!' % d['group'])
         d['group_id'] = group.id
         mimetype = dbh.get_ekey(d['mimetype'])
         d['mimetype_id'] = mimetype.id
@@ -394,8 +404,8 @@ class Node(BaseMixIn, Base):
 
         # recreate node
         n = cls.from_dict(d)
-        print(n)
         dbh.session().add(n)
+        print(n)
         return n
 
     @staticmethod
@@ -571,6 +581,42 @@ class Tag(Base):
         session.delete(tag)
 
 
+class NodeRelationship(Base):
+
+    __tablename__ = 'noderelationships'
+
+    id = Column(types.Integer, Sequence('noderelationship_id', optional=True),
+            primary_key=True)
+    node1_id = Column(types.Integer, ForeignKey('nodes.id'), nullable=False)
+    node2_id = Column(types.Integer, ForeignKey('nodes.id'), nullable=False)
+    text = Column(types.String(64), nullable=False, server_default='')
+    ordering = Column(types.Integer, nullable=False, server_default='0')
+
+    __table_args__ = ( UniqueConstraint('node1_id', 'node2_id'), {} )
+
+    node1 = relationship(Node, uselist=False, foreign_keys=[node1_id],
+                backref=backref('noderel1', cascade='all,delete,delete-orphan'))
+    node2 = relationship(Node, uselist=False, foreign_keys=[node2_id],
+                backref=backref('noderel2', cascade='all,delete,delete-orphan'))
+
+    @classmethod
+    def create(cls, node1, node2, text=''):
+        r = cls(node1_id = node1.id, node2_id = node2.id, text=text)
+        s = object_session(node1)
+        s.add(r)
+        s.flush([r])
+        r.ordering = r.id * 19
+        return r
+
+    @classmethod
+    def gets(cls, ids, session):
+        return cls.query(session).filter( cls.id.in_( ids ))
+
+    @classmethod
+    def node_relationship(cls, params):
+        return relationship()
+
+
 ## container related
 ## the structure for below variabels is:
 ## d[cls] = [ cls1, cls2, ... ]
@@ -596,6 +642,8 @@ def register_nodeclass(cls):
     cerr('Registering [%s]' % cls.__name__)
     if not cls.__name__ in _nodeclasses_:
         _nodeclasses_[cls.__name__] = cls
+    elif _nodeclasses_[cls.__name__] != cls:
+        raise RuntimeError('inconsistent class %s' % cls.__name__)
 
 
 
