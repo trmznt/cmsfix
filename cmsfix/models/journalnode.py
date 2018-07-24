@@ -172,7 +172,7 @@ class JournalItemWorkflow(GroupwareWorkflow):
     """
 
     states = { 100: 'sealed', 101: 'reviewed', 102: 'drafted' }
-    styles = { 100: 'label label-success', 101: 'label label-info', 102: 'label label-danger '}
+    styles = { 100: 'badge badge-success', 101: 'badge badge-info', 102: 'badge badge-danger '}
 
     def set_defaults(self, node, request, parent_node):
         super().set_defaults(node, request, parent_node)
