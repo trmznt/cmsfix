@@ -2,6 +2,6 @@
 
 ${breadcrumb}
 
-<h2>Node Content</h2>
+<h2>${node.__class__.__label__} Content</h2>
 
 ${html}
