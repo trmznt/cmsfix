@@ -17,14 +17,14 @@ def dump(target_dir, node=None, recursive=False):
 
 def load(source_dir, archive=False, recursive=False, user=None, group=None):
 	dbh = get_dbhandler()
-	if archive:
+	if not archive:
 		# ignore before_update temporarily
 		dbh.session().set_before_update_event(False)
 
 	load_from_directory(source_dir, recursive, user, group, dbh)
 
 	transaction.commit()
-	if archive:
+	if not archive:
 		# return before_update event
 		dbh.session().set_before_update_event(True)
 
