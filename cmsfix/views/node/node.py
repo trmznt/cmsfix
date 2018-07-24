@@ -132,6 +132,9 @@ class NodeViewer(object):
     def action(self, request=None):
         req = request or self.request
 
+    def action_post(self, request=None):
+        return False
+
 
     # renderer methods
 
@@ -216,9 +219,10 @@ class NodeViewer(object):
 
         html = row( div(content_table, class_='col-md-10') )
 
-        additional_html, additional_js = self.additional_tables()
-        html.add(additional_html)
-        content_js = content_js + additional_js
+        additions = self.additional_tables()
+        for (additional_html, additional_js) in additions:
+            html.add(additional_html)
+            content_js = content_js + additional_js
 
         return render_to_response('cmsfix:templates/node/content.mako',
                 {   'node': node,
@@ -229,7 +233,7 @@ class NodeViewer(object):
                 }, request = request )
 
     def additional_tables(self):
-        return ('', '')
+        return []
 
     def render_info(self, request):
 
@@ -323,7 +327,8 @@ class NodeViewer(object):
             self.hidden_fields( request, node ),
 
             fieldset(
-                input_text('cmsfix-slug', 'Slug', value=node.slug, offset=1),
+                input_text('cmsfix-slug', 'Slug', value=node.slug, offset=1,
+                	placeholder='Do not fill this field unless you know exactly what you do!'),
                 multi_inputs(name='cmsfix-group-user-type')[
                 input_select('cmsfix-group_id', 'Group', value=node.group_id, offset=1, size=2,
                     options = [ (g.id, g.name) for g in dbh.get_group() ]),
@@ -479,6 +484,7 @@ class NodeViewer(object):
         if not wf.is_manageable(n, request):
             bar = div(class_='collapse navbar-collapse')[
                     span('[Node ID: %d]' % n.id, class_='navbar-text'),
+                    div(name='cmsfix.statusbar.left', class_='navbar-nav mr-auto')
                 ]
 
         else:
