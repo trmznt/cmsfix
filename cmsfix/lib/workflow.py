@@ -181,7 +181,8 @@ class GroupwareWorkflow(BaseWorkflow):
             return True
         if node.user_id == user.id:
             return True
-        if node.state < 3 and node.group.has_member(user):
+        if node.state < 3 and node.group.is_admin(user):
+        	# check if user is an admin of node.group 
             return True
         return False
 
@@ -196,6 +197,8 @@ class GroupwareWorkflow(BaseWorkflow):
             return True
         if node.state == 1 and user:
             return True
+        if node.state >= 2 and user:
+        	return user.in_group(node.group)
         return self.is_manageable(node, request)
 
     def set_defaults(self, node, request, parent_node):
