@@ -70,7 +70,6 @@ class JournalItemNodeViewer(PageNodeViewer):
 
         jscode += 'var html_mimetype=%d;\n' % dbh.EK.getid('text/html', dbh.session())
 
-
         return eform, jscode
 
 

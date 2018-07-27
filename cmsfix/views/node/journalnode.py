@@ -26,6 +26,7 @@ class JournalNodeViewer(NodeViewer):
         node = self.node
         #content = div(breadcrumb(request, node), node_info(request, node))
         content = div(
+            self.breadcrumb(request),
             h2(node.title),
         )
 
@@ -43,7 +44,7 @@ class JournalNodeViewer(NodeViewer):
             tbl_body.add(
                 tr(
                     td(a(str(n.log_date), href=request.route_url('node-index', path=n.url))),
-                    td(str(n.create_time)),
+                    td(n.create_time.strftime("%Y-%m-%d %H:%M")),
                     td(span(wf.states[n.state], class_=wf.styles[n.state])),
                     td(n.title)
                 )
