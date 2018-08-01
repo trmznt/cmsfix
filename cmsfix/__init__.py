@@ -90,6 +90,9 @@ def includeme( config ):
     config.add_route('node-yaml', '{path:.*}@@yaml')
     config.add_view('cmsfix.views.node.yaml', route_name='node-yaml')
 
+    config.add_route('node-edit-next', '{path:.*}@@edit-next')
+    config.add_view('cmsfix.views.node.edit_next', route_name='node-edit-next')
+
     config.add_route('node-index', '{path:.*}')
     config.add_view('cmsfix.views.node.index', route_name='node-index')
 

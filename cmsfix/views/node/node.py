@@ -20,7 +20,7 @@ class NodeViewer(object):
 
     template_edit = 'cmsfix:templates/node/edit.mako'
     template_view = 'cmsfix:templates/node/node.mako'
-    next_route_name = 'node-index'
+    next_route_name = 'node-edit-next'
 
 
     def __init__(self, node, request):
@@ -105,6 +105,11 @@ class NodeViewer(object):
             eform, jscode = self.edit_form(req, create=True)
 
         return self.render_edit_form(req, eform, jscode, parent_node)
+
+
+    def edit_next(self, request=None):
+        req = request or self.request
+        return HTTPFound(location = req.route_url('node-index', path=self.node.url))
 
 
     def info(self, request=None):

@@ -152,6 +152,18 @@ def add(request):
 
 
 @roles(PUBLIC)
+def edit_next(request):
+    """ forward to next edit url """
+    n = get_node(request)
+    wf = get_workflow()
+
+    if not wf.is_manageable(n, request):
+        return error_page(request, 'You are not authorized to view the content of this node!')
+
+    viewer = get_viewer(n.__class__)
+    return viewer(n, request).edit_next()
+
+@roles(PUBLIC)
 def yaml(request):
 
     n = get_node(request)

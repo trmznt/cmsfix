@@ -136,6 +136,11 @@ class FileNodeViewer(NodeViewer):
         os.unlink( dest_path)
 
 
+    def edit_next(self, request=None):
+        req = request or self.request
+        return HTTPFound(location = req.route_url('node-content', path=self.node.parent.url))
+
+
 # exposable functions
 
 def index(request, node):
