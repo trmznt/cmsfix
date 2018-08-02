@@ -107,7 +107,8 @@ class FileNodeViewer(NodeViewer):
     def parse_form(self, f, d=None):
 
         d = super().parse_form(f, d)
-        d['filename'] = f['cmsfix-filename']
+        if 'cmsfix-filename' in f:
+            d['filename'] = f['cmsfix-filename']
         d['desc'] = f['cmsfix-desc']
 
         return d
