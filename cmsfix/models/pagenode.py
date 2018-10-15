@@ -40,7 +40,7 @@ class PageNode(Node):
             self.view = obj['view']
 
     def generate_slug(self):
-        self.slug = self.title.replace(' ','-').replace('--','-').replace("'",'').replace('#','').replace('%','').lower()
+        self.slug = self.title.replace(' ','-').replace('/','-').replace('--','-').replace("'",'').replace('#','').replace('%','').lower()
 
     def search_text(self):
         return ' '.join( (self.title, self.content, self.summary) )
