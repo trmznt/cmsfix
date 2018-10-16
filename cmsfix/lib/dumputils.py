@@ -2,11 +2,11 @@
 from rhombus.lib.utils import cerr, get_dbhandler
 from cmsfix.lib.cmds import get_node
 
-import os, transaction
+import os, transaction, urllib.parse
 
 def dump(target_dir, node=None, recursive=False):
 	if node == None: node = get_node('/')
-	dir_name = target_dir + node.path
+	dir_name = target_dir + urllib.parse.quote(node.path)
 	cerr('Dumping node [%s]' % node.path)
 	node.dump(dir_name)
 
