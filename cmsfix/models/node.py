@@ -56,6 +56,7 @@ class Node(BaseMixIn, Base):
                         # on the "name" attribute.
                         #collection_class=attribute_mapped_collection('slug'),
                         order_by="Node.ordering",
+                        lazy='dynamic',
                         collection_class=ordering_list('ordering')
                 )
 
