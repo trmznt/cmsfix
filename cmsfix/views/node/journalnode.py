@@ -1,5 +1,5 @@
 
-from cmsfix.models.journalnode import JournalNode, JournalItemNode
+from cmsfix.models.journalnode import JournalNode, JournalItemNode, object_session
 from cmsfix.views import *
 from cmsfix.views.node.node import ( nav, node_submit_bar,
             breadcrumb, node_info,
@@ -39,7 +39,10 @@ class JournalNodeViewer(NodeViewer):
             )
 
         tbl_body = tbody()
-        for n in node.children:
+        #for n in node.children:
+        for n in JournalItemNode.query(object_session(node))\
+                .filter(JournalItemNode.parent_id == node.id)\
+                .order_by(JournalItemNode.log_date.desc()):
             wf = get_workflow(n)
             tbl_body.add(
                 tr(
