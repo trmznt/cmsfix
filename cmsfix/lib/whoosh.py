@@ -5,7 +5,7 @@ from whoosh.fields import SchemaClass, TEXT, ID, NUMERIC, STORED, KEYWORD
 from whoosh.index import create_in, open_dir
 
 from rhombus.models.meta import RhoSession
-from rhombus.lib.utils import get_dbhandler, cerr
+from rhombus.lib.utils import get_dbhandler, cerr, cexit
 from cmsfix.models.node import Node
 from sqlalchemy import event
 
@@ -15,6 +15,7 @@ class SearchScheme(SchemaClass):
 
     # Whoosh base Searchable object
 
+    siteid = NUMERIC(stored=True)
     nodeid = NUMERIC(stored=True, unique=True)
     mtime = STORED
     keywords = KEYWORD(lowercase=True, commas=True, scorable=True)
@@ -23,9 +24,10 @@ class SearchScheme(SchemaClass):
 
 class Searchable(object):
 
-    __slots__ = ['nodeid', 'mtime', 'text', 'keywords']
+    __slots__ = ['siteid', 'nodeid', 'mtime', 'text', 'keywords']
 
-    def __init__(self, nodeid, mtime, text, keywords='' ):
+    def __init__(self, siteid, nodeid, mtime, text, keywords='' ):
+        self.siteid = siteid
         self.nodeid = nodeid
         self.mtime = mtime
         self.keywords = keywords
@@ -54,11 +56,11 @@ class IndexService(object):
 
         for n in session.new:
             if isinstance(n, Node):
-                updater.created_objects[n.id] = Searchable(n.id, n.stamp, n.search_text(), n.search_keywords())
+                updater.created_objects[n.id] = Searchable(n.site_id, n.id, n.stamp, n.search_text(), n.search_keywords())
 
         for n in session.dirty:
             if isinstance(n, Node):
-                updater.updated_objects[n.id] = Searchable(n.id, n.stamp, n.search_text(), n.search_keywords())
+                updater.updated_objects[n.id] = Searchable(n.site_id, n.id, n.stamp, n.search_text(), n.search_keywords())
 
         for n in session.deleted:
             if isinstance(n, Node):
@@ -75,11 +77,11 @@ class IndexService(object):
                 writer.delete_by_term('nodeid', nodeid)
 
             for obj in updater.created_objects.values():
-                writer.add_document(nodeid=obj.nodeid, mtime=obj.mtime, text=obj.text, keywords=obj.keywords)
+                writer.add_document(siteid=obj.siteid, nodeid=obj.nodeid, mtime=obj.mtime, text=obj.text, keywords=obj.keywords)
 
             for obj in updater.updated_objects.values():
                 writer.delete_by_term('nodeid', obj.nodeid)
-                writer.add_document(nodeid=obj.nodeid, mtime=obj.mtime, text=obj.text, keywords=obj.keywords)
+                writer.add_document(siteid=obj.siteid, nodeid=obj.nodeid, mtime=obj.mtime, text=obj.text, keywords=obj.keywords)
 
         updater.reset()
 
@@ -124,6 +126,9 @@ def set_index_service(index_service):
 
 
 def get_index_service():
+    global _INDEX_SERVICE_
+    if _INDEX_SERVICE_ is None:
+        raise RuntimeError('FATAL ERR: call set_index_service() first!')
     return _INDEX_SERVICE_
 
 
@@ -138,6 +143,6 @@ def index_all():
 
         for n in dbh.get_nodes():
             writer.delete_by_term('nodeid', n.id)
-            writer.add_document(nodeid=n.id, mtime=n.stamp, text=n.search_text(), keywords=n.search_keywords())
+            writer.add_document(siteid=n.site_id, nodeid=n.id, mtime=n.stamp, text=n.search_text(), keywords=n.search_keywords())
             cerr('indexing node: %d' % n.id)
 
