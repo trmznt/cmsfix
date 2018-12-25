@@ -29,11 +29,17 @@ class DBHandler(rho_handler.DBHandler):
         return q.one()
 
 
-    def get_node(self, key, default=None):
+    def get_node(self, key, site, default=None):
         if key.startswith('/'):
             try:
                 # use key as path
                 q = self.Node.query(self.session()).filter( self.Node.path == key )
+                if site is not None:
+                    q = q.join(self.Site)
+                    if type(site) == int:
+                        q = q.filter( self.Site.id == site )
+                    else:
+                        q = q.filter( self.Site.fqdn == site )
                 return q.one()
 
             except exc.NoResultFound:

@@ -11,7 +11,7 @@ def init_argparser( parser = None ):
     if parser is None:
         p = arg_parser('mgr [options]')
     else:
-        p= parser
+        p = parser
 
     p.add_argument('--rm', default=False, action='store_true',
         help = 'remove node')
@@ -22,8 +22,14 @@ def init_argparser( parser = None ):
     p.add_argument('--load', default=False, action='store_true',
         help = 'load from source directory')
 
+    p.add_argument('--newsite', default=False, action='store_true',
+        help = 'create a new root on specific site ')
+
+    p.add_argument('--newroot', default=False, action='store_true',
+        help = 'create a new root on specific site ')
 
     p.add_argument('--url', default='/')
+    p.add_argument('--fqdn', default=None)
 
     p.add_argument('--srcdir')
     p.add_argument('--dstdir')
@@ -80,6 +86,12 @@ def do_mgr(args, settings, dbh = None):
     if args.load:
         do_load(args, dbh, settings)
 
+    if args.newsite:
+        do_newsite(args, dbh, settings)
+
+    if args.newroot:
+        do_newroot(args, dbh, settings)
+
 
 def do_rm(args, dbh, settings):
 
@@ -97,5 +109,15 @@ def do_dump(args, dbh, settings):
 def do_load(args, dbh, settings):
 
     cmds.load(args.srcdir, recursive=args.recursive)
+
+
+def do_newsite(args, dbh, settings):
+
+    cmds.newsite(args.fqdn)
+
+
+def do_newroot(args, dbh, settings):
+
+    cmds.newroot(args.fqdn)
 
 

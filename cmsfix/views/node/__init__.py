@@ -380,11 +380,19 @@ def get_path(request):
 
 
 def get_node(request):
+    # get_node() needs to check host and cmsfix.site and decide which site
+    # to use to get node
 
     path = get_path(request)
+    site = request.registry.settings.get('cmsfix.site', None)
+
+    # if cmsfix.site is None, then do not use site information
+    # if cmsfix.site is *, then use hostname 
+    if site == '*':
+        site = request.host
 
     dbh = get_dbhandler()
-    n = dbh.get_node(path)
+    n = dbh.get_node(path, site=site)
     if not n:
         raise exc.HTTPNotFound('Node %s is not found in the system' % path)
 
