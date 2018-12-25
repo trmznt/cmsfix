@@ -97,4 +97,11 @@ def newroot(fqdn):
 
     dbh.session().add(rootpage)
 
+
+def reindex():
+    """ re-index whoosh database with all nodes """
+
+    from cmsfix.lib.whoosh import index_all, get_index_service
+    index_all()
+
 # end of file

@@ -4,6 +4,7 @@ from rhombus.lib.utils import cerr, cout, cexit, get_dbhandler
 from rhombus.models.core import set_func_userid
 
 from cmsfix.lib import cmds
+from cmsfix.lib.whoosh import IndexService, set_index_service
 import transaction
 
 def init_argparser( parser = None ):
@@ -27,6 +28,9 @@ def init_argparser( parser = None ):
 
     p.add_argument('--newroot', default=False, action='store_true',
         help = 'create a new root on specific site ')
+
+    p.add_argument('--reindex', default=False, action='store_true',
+        help = 'reindex all nodes to whoosh database')
 
     p.add_argument('--url', default='/')
     p.add_argument('--fqdn', default=None)
@@ -65,6 +69,8 @@ def do_mgr(args, settings, dbh = None):
 
     if not dbh:
         dbh = get_dbhandler( settings )
+    set_index_service( IndexService(settings['cmsfix.whoosh.path']) )
+
 
     # set default user
     login = args.login or None
@@ -91,6 +97,9 @@ def do_mgr(args, settings, dbh = None):
 
     if args.newroot:
         do_newroot(args, dbh, settings)
+
+    if args.reindex:
+        do_reindex(args, dbh, settings)
 
 
 def do_rm(args, dbh, settings):
@@ -119,5 +128,10 @@ def do_newsite(args, dbh, settings):
 def do_newroot(args, dbh, settings):
 
     cmds.newroot(args.fqdn)
+
+
+def do_reindex(args, dbh, settints):
+
+    cmds.reindex()
 
 
