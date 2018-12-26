@@ -2,9 +2,11 @@
 
 from rhombus.lib.utils import get_dbhandler
 from rhombus.views import *
+from cmsfix.views import *
 
 from cmsfix.lib.whoosh import get_index_service, SearchScheme
 from whoosh.qparser import QueryParser
+from whoosh.query import Term
 
 def index(request):
     """ return a basic form if no params """
@@ -12,17 +14,20 @@ def index(request):
     if 'q' in request.params:
 
         q = request.params.get('q')
+        fqdn = get_site(request)
+
+        dbh = get_dbhandler()
+        siteid = dbh.get_site(fqdn).id
 
         index_service = get_index_service()
 
         qp = QueryParser('text', schema=index_service.ix.schema)
         query = qp.parse(q)
+        allow_q = Term('siteid', siteid)
 
         with index_service.ix.searcher() as searcher:
-            results = searcher.search(query)
+            results = searcher.search(query, filter=allow_q)
             node_ids = [ r['nodeid'] for r in results ]
-
-        dbh = get_dbhandler()
 
         html = div()
         for nodeid in node_ids:
