@@ -10,10 +10,13 @@ def get_site(request):
 
     fqdn = request.registry.settings.get('cmsfix.site', None)
 
+    if fqdn is None:
+        return '*'
+
     # if cmsfix.site is None, then do not use site information
     # if cmsfix.site is *, then use hostname 
     if fqdn == '*':
-        fqdn = request.host
+        return request.host
 
     return fqdn
 
