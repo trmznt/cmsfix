@@ -37,8 +37,9 @@ class PageNodeViewer(NodeViewer):
             path = 'home.mako'
         else:
             path = path[1:] + '.mako'
+        path = request.registry.settings.get('cmsfix.templatedir', '') + path
         cerr('checking for template %s' % path)
-        if os.path.exists('templates/'+path):
+        if os.path.exists(path):
             template_view = path
         else:
             template_view = self.template_view
