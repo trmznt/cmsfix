@@ -6,6 +6,7 @@ from rhombus.lib.tags import *
 from rhombus.lib.modals import popup, modal_delete
 
 from cmsfix.lib.workflow import get_workflow
+from cmsfix.views import *
 
 import pyramid.httpexceptions as exc
 
@@ -384,12 +385,7 @@ def get_node(request):
     # to use to get node
 
     path = get_path(request)
-    site = request.registry.settings.get('cmsfix.site', None)
-
-    # if cmsfix.site is None, then do not use site information
-    # if cmsfix.site is *, then use hostname 
-    if site == '*':
-        site = request.host
+    site = get_site(request)
 
     dbh = get_dbhandler()
     n = dbh.get_node(path, site=site)
