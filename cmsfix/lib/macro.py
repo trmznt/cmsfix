@@ -7,7 +7,7 @@ import re
 # ///123
 # <<MacroName>>
 # [[MacroName]]
-pattern = re.compile('///(\d+)|\&lt\;\&lt\;(.+)\&gt\;\&gt\;|\[\[(.+)\]\]')
+pattern = re.compile('///(\d+)|///\{([\w-]+)\}|\&lt\;\&lt\;(.+)\&gt\;\&gt\;|\[\[(.+)\]\]')
 
 
 # syntax for Macro is:
@@ -35,6 +35,9 @@ def postrender(buffer, node):
         elif group.startswith('[['):
             nb += run_macro(group, node, dbh)
 
+        else:
+            nb += '{{ ERR: macro pattern unprocessed }}'
+
         start_pos = m.end()
 
     nb += buffer[start_pos:]
@@ -42,9 +45,41 @@ def postrender(buffer, node):
     return nb
 
 
+def postedit(content, node):
+    """ return a new modified content """
+
+    dbh = get_dbhandler()
+    nc = ''
+    start_pos = 0
+
+    for m in pattern.finditer(content):
+
+        nc += content[start_pos:m.start()]
+        group = m.group()
+
+        if group.startswith('///'):
+            if group[3] != '{':
+                # convert to UUID
+                node = dbh.get_node_by_id(int(group[3:]))
+                nc += '///{' + str(node.uuid) + '}'
+            else:
+                nc += group
+
+        else:
+            nc += group
+
+        start_pos = m.end()
+
+    nc += content[start_pos:]
+    return nc
+
+
 def node_link(text, dbh):
 
-    node = dbh.get_node_by_id(int(text[3:]))
+    if text[3] == '{':
+        node = dbh.get_nodes_by_uuids(text[4:-1])
+    else:
+        node = dbh.get_node_by_id(int(text[3:]))
 
     return literal('<a href="/%s">%s</a>' % (node.url, node.title))
 
