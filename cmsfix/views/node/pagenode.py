@@ -59,7 +59,7 @@ class PageNodeViewer(NodeViewer):
         if 'cmsfix-title' in f:
             d['title'] = f['cmsfix-title']
         if 'cmsfix-content' in f:
-            d['content'] = f['cmsfix-content']
+            d['content'] = macro.postedit(f['cmsfix-content'], self.node)
         if 'cmsfix-summary' in f:
             d['summary'] = f['cmsfix-summary']
 
