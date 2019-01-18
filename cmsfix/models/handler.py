@@ -54,6 +54,12 @@ class DBHandler(rho_handler.DBHandler):
     def get_nodes_by_ids(self, node_ids):
         return self.Node.query(self.session()).filter( self.Node.id.in_( node_ids ))
 
+    def get_nodes_by_uuids(self, node_uuids):
+        if type(node_uuids) == str:
+            return self.Node.query(self.session()).filter( self.Node.uuid == node_uuids).one()
+        elif type(node_uuids) == list:
+            return self.Node.query(self.session()).filter( self.Node.uuid.in_( node_uuids) )
+
     def get_nodes_by_level(self, level):
         return self.Node.query(self.session()).filter( self.Node.level == level)
 
