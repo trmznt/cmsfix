@@ -13,7 +13,7 @@ pattern = re.compile('///(\d+)|///\{([\w-]+)\}|\&lt\;\&lt\;(.+)\&gt\;\&gt\;|\[\[
 # syntax for Macro is:
 # [[MacroName|option1|option2|option3]]
 
-def postrender(buffer, node):
+def postrender(buffer, node, request):
     """ return a new buffer """
 
     dbh = get_dbhandler()
@@ -33,7 +33,7 @@ def postrender(buffer, node):
             nb += node_link(group, dbh)
 
         elif group.startswith('[['):
-            nb += run_macro(group, node, dbh)
+            nb += run_macro(group, node, dbh, request)
 
         else:
             nb += '{{ ERR: macro pattern unprocessed }}'
@@ -84,7 +84,7 @@ def node_link(text, dbh):
     return literal('<a href="/%s">%s</a>' % (node.url, node.title))
 
 
-def run_macro(text, node, dbh):
+def run_macro(text, node, dbh, request):
 
     global _MACROS_
 
@@ -95,7 +95,7 @@ def run_macro(text, node, dbh):
     if macro_name not in _MACROS_:
         return '[[ERR - macro %s not found]]' % macro_name
 
-    return _MACROS_[macro_name](node, components[1:])
+    return _MACROS_[macro_name](node, components[1:], request)
 
 
 _MACROS_ = {}
@@ -118,7 +118,7 @@ def macro(func):
 ##
 
 @macro
-def M_ListChildNodes(node, components):
+def M_ListChildNodes(node, components, request):
 
     nodetype=[]
     for c in components:
@@ -143,7 +143,7 @@ def M_ListChildNodes(node, components):
 
 
 @macro
-def M_Img(node, components):
+def M_Img(node, components, request):
 
     path = components[0]
     if path.startswith('http') or path.startswith('ftp'):
@@ -168,7 +168,7 @@ def M_Img(node, components):
 
 
 @macro
-def M_ListNode(node, components):
+def M_ListNode(node, components, request):
 
     kwargs = {}
     for c in components:

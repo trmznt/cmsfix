@@ -25,7 +25,7 @@ class PageNodeViewer(NodeViewer):
         # set the formatter
         if node.mimetype == 'text/x-rst':
             content = literal(render_rst(node.content))
-            content = literal(macro.postrender(content, node))
+            content = literal(macro.postrender(content, node, request))
         elif node.mimetype == 'text/html':
             content = literal(node.content)
         else:
