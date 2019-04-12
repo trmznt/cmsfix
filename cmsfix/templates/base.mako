@@ -29,9 +29,11 @@
   <link href="${request.static_url('rhombus:static/rst/rst.css')}" rel="stylesheet" />
   <link href="${request.static_url('rhombus:static/rst/theme.css')}" rel="stylesheet" />
 
-  <link href="${request.static_url('cmsfix:static/fonts/merriweather/merriweather.css')}" rel="stylesheet" />
+  <!-- <link href="${request.static_url('cmsfix:static/fonts/merriweather/merriweather.css')}" rel="stylesheet" /> -->
+  <!-- <link href="http://fonts.googleapis.com/css?family=Merriweather" rel=’stylesheet’ type=’text/css’> -->
   <link href="${request.static_url('cmsfix:static/fonts/gentiumbb/gentiumbb.css')}" rel="stylesheet" />
   <link href="${request.static_url('cmsfix:static/fonts/lato/lato.css')}" rel="stylesheet" />
+  <link href="${request.static_url('cmsfix:static/fonts/charis/CharisSIL.css')}" rel="stylesheet" />
   <link href="${request.static_url('cmsfix:static/custom.css')}" rel="stylesheet" />
 
   <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">

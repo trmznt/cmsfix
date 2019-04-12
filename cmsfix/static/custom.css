@@ -13,12 +13,21 @@ body {
 }
 
 .document {
-    font-family: Gentium Book Basic;
+    font-family: CharisSILW, Merriweather, Gentium Book Basic;
     font-size: 1.5em;
+    font-variant-numeric: lining-nums tabular-nums;
 }
 
 h1, .title {
     font-family: Lato;
+}
+
+.document .literal {
+    font-size: 0.9em;
+}
+
+pre, code, kbd {
+    font-size: 0.7em;
 }
 
 .progressbar-container {
