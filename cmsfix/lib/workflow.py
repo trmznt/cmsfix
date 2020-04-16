@@ -35,6 +35,7 @@ def get_workflow(instance=None):
     return __WORKFLOW__
 
 
+
 class BaseWorkflow(object):
 
     states = {}
@@ -156,6 +157,12 @@ class GroupwareWorkflow(BaseWorkflow):
                 * group owner can edit/manage
                 * group member can access
         3 - private - only user can access
+
+        node.status is used for workflow
+        status is 16-bit integer with the following rules:
+        00000000 0000 0000
+                      viewing: 0 - public, 1 - protected, 2 - restricted, 3 - private
+                 editing: [ 0 - public, 1 - user, 2 - group ]
     """
 
     states = { 0: 'public', 1: 'protected', 2: 'restricted', 3: 'private' }
