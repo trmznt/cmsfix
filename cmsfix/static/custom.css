@@ -14,7 +14,7 @@ body {
 
 .document {
     font-family: CharisSILW, Merriweather, Gentium Book Basic;
-    font-size: 1.5em;
+    font-size: 1.3em;
     font-variant-numeric: lining-nums tabular-nums;
 }
 
@@ -23,11 +23,11 @@ h1, .title {
 }
 
 .document .literal {
-    font-size: 0.9em;
+    font-size: 0.85em;
 }
 
 pre, code, kbd {
-    font-size: 0.7em;
+    font-size: 0.85em;
 }
 
 .progressbar-container {
