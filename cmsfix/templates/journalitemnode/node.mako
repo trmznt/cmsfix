@@ -8,5 +8,5 @@ ${html}
 
 <h4>File Attachment:</h4>
 
-${macro.M_ListChildNodes(node, [ 'type=FileNode'])}
+${macro.M_ListChildNodes(node, [ 'type=FileNode'], request)}
 
