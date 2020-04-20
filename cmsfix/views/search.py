@@ -29,16 +29,16 @@ def index(request):
             results = searcher.search(query, filter=allow_q)
             node_ids = [ r['nodeid'] for r in results ]
 
-        html = div()
+        html = div()[ div(h3('Search Result'))]
         for nodeid in node_ids:
             node = dbh.get_node_by_id(nodeid)
             html.add(
                 div(class_='row')[
                     div(class_='col-md-1')[
-                        'Modified at:', br(), 'by', br()
+                        node.stamp.date(), br(), 'by', node.lastuser.login, br()
                     ],
                     div(class_='col-md-11')[
-                        h3(node.title), br(), node.summary
+                        a(h5(node.title), href=node.url), br(), node.summary
                     ]
                 ]
             )
