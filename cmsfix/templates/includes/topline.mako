@@ -7,9 +7,9 @@
     <div class="collapse navbar-collapse justify-content-stretch" id="navbarCollapse">
         <div class="navbar-nav mr-auto"></div>
         <div class="navbar-nav justify-content-stretch">
-    	<form class="mr-3 d-inline">
+    	<form class="mr-3 d-inline" action='/search'>
             <div class="input-group">
-    		<input class="form-control" type="text" placeholder="Search" aria-label="Search">
+    		<input class="form-control" type="text" placeholder="Search" aria-label="Search" name='q'>
     		<button class="btn btn-outline-success my-2 my-sm-0" type="submit"><i class="fa fa-search"></i></button>
             </div>
         </form>
