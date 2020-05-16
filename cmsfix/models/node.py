@@ -254,7 +254,7 @@ class Node(BaseMixIn, Base):
 
     @property
     def url(self):
-        return self.path[1:]
+        return self.path
 
 
     @classmethod

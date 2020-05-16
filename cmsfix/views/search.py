@@ -18,7 +18,8 @@ def index(request):
     html.add(
         form(action="/search", name="search-form")[
             input_text("q", label = "Query", offset=1, value=q),
-        ]
+        ],
+        br()
 
     )
 
@@ -50,10 +51,12 @@ def index(request):
             html.add(
                 div(class_='row')[
                     div(class_='col-md-1')[
-                        node.stamp.date(), br(), 'by', node.lastuser.login, br()
+                        node.stamp.date(), 'by', node.lastuser.login,
                     ],
                     div(class_='col-md-11')[
-                        a(h5(node.title), href=node.url), br(), node.summary
+                        a(div(node.url, br(), h5(node.title)), href=node.url), br(),
+                        node.summary if hasattr(node, 'summary') else 
+                        ( node.desc if hasattr(node, 'desc') else '')
                     ]
                 ]
             )
