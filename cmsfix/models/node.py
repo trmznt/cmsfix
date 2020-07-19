@@ -254,7 +254,8 @@ class Node(BaseMixIn, Base):
 
     @property
     def url(self):
-        return self.path
+        """ remove the leading slash (/) for use with request.route_url """
+        return self.path[1:]
 
 
     @classmethod

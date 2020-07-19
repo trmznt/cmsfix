@@ -54,7 +54,7 @@ def index(request):
                         node.stamp.date(), 'by', node.lastuser.login,
                     ],
                     div(class_='col-md-11')[
-                        a(div(node.url, br(), h5(node.title)), href=node.url), br(),
+                        a(div(node.path, br(), h5(node.title)), href=node.url), br(),
                         node.summary if hasattr(node, 'summary') else 
                         ( node.desc if hasattr(node, 'desc') else '')
                     ]
