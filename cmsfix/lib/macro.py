@@ -1,6 +1,7 @@
 
 from rhombus.lib.utils import get_dbhandler
 from rhombus.lib.tags import *
+from cmsfix.models.node import Node
 import re
 
 # the pattern below is either
@@ -12,6 +13,9 @@ pattern = re.compile('///(\d+)|///\{([\w-]+)\}|\&lt\;\&lt\;(.+)\&gt\;\&gt\;|\[\[
 
 # syntax for Macro is:
 # [[MacroName|option1|option2|option3]]
+
+class MacroError(RuntimeError):
+    pass
 
 def postrender(buffer, node, request):
     """ return a new buffer """
@@ -95,7 +99,10 @@ def run_macro(text, node, dbh, request):
     if macro_name not in _MACROS_:
         return '[[ERR - macro %s not found]]' % macro_name
 
-    return _MACROS_[macro_name](node, components[1:], request)
+    try:
+        return _MACROS_[macro_name](node, components[1:], request)
+    except MacroError as m_err:
+        return '[[%s ERR: %s]]' % (macro_name, m_err)
 
 
 _MACROS_ = {}
@@ -119,11 +126,37 @@ def macro(func):
 
 @macro
 def M_ListChildNodes(node, components, request):
+    """ ListChildNodes
+        type=*Nodetype*
+        order=slug/id/mtime
+    """
 
     nodetype=[]
+    children = node.children
     for c in components:
         if c.startswith('type='):
             nodetype.append( c[5:] )
+        elif c.startswith('order='):
+            order = c[6:].strip().lower()
+            desc = False
+            if order[0] == '-':
+                desc = True
+                order = order[1:]
+            elif order[0] == '+':
+                order = order[1:]
+            # we cancel the default ordering first
+            children = node.children.order_by(None)
+            if order == 'slug':
+                if desc: children = children.order_by(Node.slug.desc())
+                else: children = children.order_by(Node.slug)
+            elif order == 'id':
+                if desc: children = children.order_by(Node.id.desc())
+                else: children = children.order_by(Node.id)
+            elif order == 'mtime':
+                if desc: children = children.order_by(Node.stamp.desc())
+                else: children = children.order_by(Node.stamp)
+            else:
+                raise MacroError("unknown order option: %s" % order )
 
     html = div()
 
@@ -132,7 +165,7 @@ def M_ListChildNodes(node, components, request):
     if not nodetype:
         nodetype.append( 'PageNode' )
 
-    for c in node.children:
+    for c in children:
         if c.__class__.__name__ in nodetype:
             toc.add(
                 li(a(c.title, href=c.path))
