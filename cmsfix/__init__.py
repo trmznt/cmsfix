@@ -45,6 +45,14 @@ def includeme( config ):
     config.add_route('logout', '/logout')
     config.add_view('cmsfix.views.home.logout', route_name='logout')
 
+    # for stand-alone google login
+    if config.registry.settings.get('rhombus.oauth2.google.client_id', False):
+        config.add_route('g_login', '/g_login')
+        config.add_view('rhombus.views.google.g_login', route_name='g_login')
+
+        config.add_route('g_callback', '/g_callback')
+        config.add_view('rhombus.views.google.g_callback', route_name='g_callback')
+
     config.add_route('search', '/search')
     config.add_view('cmsfix.views.search.index', route_name='search')
 
