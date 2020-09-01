@@ -54,7 +54,7 @@ def includeme( config ):
         config.add_view('rhombus.views.google.g_callback', route_name='g_callback')
 
     # check if we are running as master
-    if settings.get('rhombus.authmode', None) == 'master':
+    if config.registry.settings.get('rhombus.authmode', None) == 'master':
 
         # add confirmation url
         config.add_route('confirm', '/confirm')
