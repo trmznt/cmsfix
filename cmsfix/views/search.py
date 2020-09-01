@@ -51,7 +51,7 @@ def index(request):
             html.add(
                 div(class_='row')[
                     div(class_='col-md-1')[
-                        node.stamp.date(), 'by', node.lastuser.login,
+                        node.stamp.date(), node.lastuser.login,
                     ],
                     div(class_='col-md-11')[
                         a(div(node.path, br(), h5(node.title)), href=node.url), br(),
