@@ -53,6 +53,22 @@ def includeme( config ):
         config.add_route('g_callback', '/g_callback')
         config.add_view('rhombus.views.google.g_callback', route_name='g_callback')
 
+    # check if we are running as master
+    if settings.get('rhombus.authmode', None) == 'master':
+
+        # add confirmation url
+        config.add_route('confirm', '/confirm')
+        config.add_view('rhombus.views.home.confirm', route_name = 'confirm',
+                renderer = 'json')
+
+        # for authentication expiration time / stamp purpose
+        config.add_route('rhombus_js', '/auth-stamp.js')
+        config.add_view('rhombus.views.home.rhombus_js', route_name = 'rhombus_js',
+                renderer = 'string')
+        config.add_route('rhombus_css', '/auth-stamp.css')
+        config.add_view('rhombus.views.home.rhombus_js', route_name = 'rhombus_css',
+                renderer = 'string')
+
     config.add_route('search', '/search')
     config.add_view('cmsfix.views.search.index', route_name='search')
 
