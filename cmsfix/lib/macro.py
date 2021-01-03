@@ -126,9 +126,14 @@ def macro(func):
 
 @macro
 def M_ListChildNodes(node, components, request):
-    """ ListChildNodes
-        type=*Nodetype*
-        order=slug/id/mtime
+    """ [[ListChildNodes|option|option|..]]
+
+        Options:
+            type=Nodetype(PageNode,JournalNode, etc)
+            order=[+-]slug/id/mtime/title
+
+        Example:
+            [[ListChildNodes|type=PageNode|order=+title]]
     """
 
     nodetype=[]
@@ -155,6 +160,10 @@ def M_ListChildNodes(node, components, request):
             elif order == 'mtime':
                 if desc: children = children.order_by(Node.stamp.desc())
                 else: children = children.order_by(Node.stamp)
+            elif order == 'title':
+                children_list = sorted( [(n.title or n.slug, n) for n in children.all()],
+                                        reverse = desc)
+                children = [n for (k, n) in children_list]
             else:
                 raise MacroError("unknown order option: %s" % order )
 
@@ -177,6 +186,13 @@ def M_ListChildNodes(node, components, request):
 
 @macro
 def M_Img(node, components, request):
+    """ [[Img|source|option|option|...]]
+
+        source: link to source (//ID, /images/a.jpg, http://domain/image.jpg, path/to/image.jpg)
+
+        options:
+            currently none
+    """
 
     path = components[0]
     if path.startswith('http') or path.startswith('ftp'):
@@ -216,7 +232,7 @@ def M_ListNode(node, components, request):
 
     for n in nodes:
         toc.add(
-            li(a(n.title, href=n.path))
+            li(a(n.title or n.slug, href=n.path))
         )
 
     html.add(toc)
