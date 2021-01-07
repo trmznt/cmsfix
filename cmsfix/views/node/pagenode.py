@@ -136,20 +136,20 @@ class PageNodeViewer(NodeViewer):
         return n
 
 
-def index(request, node):
+def index_xxx(request, node):
     return render_pagenode(node, request)
 
 
-def view(request, node):
+def view_xxx(request, node):
     return render_pagenode(node, request)
 
-def info(request, node):
+def info_xxx(request, node):
     raise NotImplementedError()
 
-def content(request, node):
+def content_xxx(request, node):
     return render_pagenode_content(node, request)
 
-def edit(request, node):
+def edit_xxx(request, node):
 
     if request.method == 'POST':
         # update data
@@ -174,7 +174,7 @@ def edit(request, node):
             }, request = request )
 
 
-def add(request, node):
+def add_xxx(request, node):
 
     if request.method == 'POST':
         # sanity check
@@ -220,11 +220,11 @@ def add(request, node):
             }, request = request )
 
 
-def action(request, node):
+def action_xxx(request, node):
     raise NotImplementedError()
 
 
-def render_pagenode(node, request):
+def render_pagenode_xxx(node, request):
 
     # set the formatter
     if node.mimetype == 'text/x-rst':
@@ -242,11 +242,11 @@ def render_pagenode(node, request):
             }, request = request )
 
 
-def render_pagenode_content(node, request):
+def render_pagenode_content_xxx(node, request):
     return render_node_content(node, request)
 
 
-def edit_form(node, request, create=False):
+def edit_form_xxx(node, request, create=False):
 
     dbh = get_dbhandler()
 
@@ -266,7 +266,7 @@ def edit_form(node, request, create=False):
     return eform, jscode
 
 
-def parse_form(f, d=None):
+def parse_form_xxx(f, d=None):
 
     d = node_parse_form(f, d)
     d['title'] = f['cmsfix-title']
@@ -303,7 +303,7 @@ def toolbar_xxx(request, n):
     return bar
 
 
-def render_rst(text, format='html'):
+def render_rst_xxx(text, format='html'):
 
     parts = docutils.core.publish_parts( text, writer_name=format,
         settings_overrides={'initial_header_level': 2} )

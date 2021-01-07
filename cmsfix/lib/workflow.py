@@ -216,41 +216,6 @@ class GroupwareWorkflow(BaseWorkflow):
         node.state  = 3
         node.listed = True
 
-    # menu-related methods
-
-    def show_menu_xxx(self, node, request):
-        """ based on user authorization, show workflow menu; return a <li> element """
-        html = li(class_='dropdown')
-        html.add(
-            a(span(self.states[node.state], class_=self.styles[node.state]), span(class_='caret'), href="#", class_='dropdown-toggle',
-            **{ "data-toggle": "dropdown", "role": "button", "aria-haspopup": "true",
-                "aria-expanded": "false"})
-        )
-        html.add(
-            ul(class_='dropdown-menu')[
-                tuple(
-                    li(
-                        a(self.states[i],
-                            href=request.route_url('node-action', path=node.url,
-                                        _query = { '_method': 'set-state', 'state': i })) )
-                    for i in sorted(self.states.keys(), reverse=True)
-                )
-            ]
-        )
-        return html
-
-
-    def process_menu_xxx(self, node, request):
-        """ process request """
-
-        state = int(request.params.get('state', 3))
-        node.state = state
-
-        from rhombus.lib.utils import get_dbhandler
-        dbsession = get_dbhandler().session()
-        assert dbsession.user, "Fatal Error: user not properly set up"
-        assert dbsession.user.id == request.user.id, "Fatal Error: inconsistent user id in db session"
-
 
 class PublicWorkflow(BaseWorkflow):
     """ workflow with reviews, suitable for publishing public articles

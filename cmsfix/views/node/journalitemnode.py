@@ -92,10 +92,10 @@ class JournalItemNodeViewer(PageNodeViewer):
         return bar
 
 
-def index(request, node):
+def xxx_index(request, node):
     return view(request, node)
 
-def view(request, node):
+def xxx_view(request, node):
 
     content = div()[
         #div( breadcrumb(request, node.parent) ),
@@ -116,11 +116,11 @@ def view(request, node):
             }, request = request )
 
 
-def content(request, node):
+def xxx_content(request, node):
     raise NotImplementedError()
 
 
-def add(request, node):
+def xxx_add(request, node):
 
     if request.method == 'POST':
         # sanity check
@@ -168,7 +168,7 @@ def add(request, node):
             }, request = request )
 
 
-def edit(request, node):
+def xxx_edit(request, node):
 
     if request.method == "POST":
 
@@ -198,17 +198,13 @@ def edit(request, node):
 
 
 
-def info(request, node):
+def xxx_info(request, node):
     raise NotImplementedError()
 
 
-def toolbar_xxx(request, node):
-    """ JournalItem toolbar can only be used """
-    return ''
-
 ##
 
-def edit_form(node, request, create=False):
+def xxx_edit_form(node, request, create=False):
     """ use a simple interface for journal """
 
     dbh = get_dbhandler()
@@ -254,7 +250,7 @@ def edit_form(node, request, create=False):
 
 
 
-def parse_form( f, d = None ):
+def xxx_parse_form( f, d = None ):
 
     d = pagenode_parse_form(f, d)
     if 'cmsfix-log_date' in f:
