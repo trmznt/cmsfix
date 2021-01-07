@@ -21,24 +21,6 @@ def docs(request):
     return fso.serve_file(path, mount_point=('/', "cmsfix:../docs/"),
                     formatter = lambda abspath: formatter(abspath, request))
 
-    doc_path = request.registry.settings['cmsfix-doc-path'] + request.matchdict.get('path', '/index.rst')
-
-    with open(doc_path) as f:
-        buf = f.read()
-
-    # if html file, just return the content
-    if doc_path.endswith('html'):
-        return literal(buf)
-
-    # prepare content
-    content = literal(render_rst(buf))
-
-    # show content
-    return render_to_response('cmsfix:templates/plainpage.mako',
-        {
-			'html': content,
-        }, request = request )
-
 
 def formatter( abspath, request ):
 
@@ -61,6 +43,7 @@ def formatter( abspath, request ):
 
     else:
         return FileResponse( abspath )
+
 
 def show_macro(request):
 
