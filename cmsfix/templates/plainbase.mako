@@ -21,7 +21,7 @@
   <link href="${request.static_url('rhombus:static/bootstrap/css/bootstrap.min.css')}" rel="stylesheet" />
   <link href="${request.static_url('rhombus:static/bootstrap/css/bootstrap-theme.min.css')}" rel="stylesheet" />
   <link href="${request.static_url('rhombus:static/fonts/source-sans-pro.css')}" rel="stylesheet" />
-   <link href="${request.static_url('genaf:static/custom.css')}" rel="stylesheet" />
+  <link href="${request.static_url('cmsfix:static/custom.css')}" rel="stylesheet" />
   ${self.stylelink()}
 
   </head>
@@ -42,8 +42,7 @@
       <div class='row'>
       <div class='col-md-12'>
         <!-- font: Nobile -->
-        <p>(C) 2013 - 2015 Menzies School of Health Research, Australia <br />
-           (C) 2013 - 2015 Eijkman Institute for Molecular Biology, Indonesia</p>
+        <p>(C) 2020 Eijkman Institute for Molecular Biology, Indonesia</p>
       </div>
       </div>
     </div>
