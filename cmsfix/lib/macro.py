@@ -50,7 +50,7 @@ def postrender(buffer, node, request):
 
 
 def postedit(content, node):
-    """ return a new modified content """
+    """ post edit the content, return a new modified content """
 
     dbh = get_dbhandler()
     nc = ''
@@ -119,6 +119,10 @@ def macro(func):
 
     return func
 
+
+def macro_dict():
+    return _MACROS_
+
 ## -- MACRO --
 ##
 ## all macro functions should return either html or literal objects
@@ -126,7 +130,9 @@ def macro(func):
 
 @macro
 def M_ListChildNodes(node, components, request):
-    """ [[ListChildNodes|option|option|..]]
+    """ Create list of child nodes.
+
+        [[ListChildNodes|option|option|..]]
 
         Options:
             type=Nodetype(PageNode,JournalNode, etc)
@@ -186,11 +192,13 @@ def M_ListChildNodes(node, components, request):
 
 @macro
 def M_Img(node, components, request):
-    """ [[Img|source|option|option|...]]
+    """ Show embedded images in the text.
+
+        [[Img|source|option|option|...]]
 
         source: link to source (//ID, /images/a.jpg, http://domain/image.jpg, path/to/image.jpg)
 
-        options:
+        Options:
             currently none
     """
 
@@ -218,6 +226,21 @@ def M_Img(node, components, request):
 
 @macro
 def M_ListNode(node, components, request):
+    """ Create list of nodes that are accessible by the current user.
+
+        [[ListNode|option|...]]
+
+        Options:
+
+            level = node level
+
+            tags = only nodes which have these tags
+
+        Example:
+
+            [[ListNode|level=2|tags=keyword1;keyword2]]
+
+    """
 
     kwargs = {}
     for c in components:
@@ -225,12 +248,15 @@ def M_ListNode(node, components, request):
             kwargs['level'] = int(c[6:])
         elif c.startswith('tags='):
             kwargs['tags'] = c[5:].split(';')
+        elif c.startswith('limit='):
+            pass
 
     nodes = get_dbhandler().get_nodes(**kwargs)
     html = div()
     toc = ul()
 
     for n in nodes:
+        # check user accessibility
         toc.add(
             li(a(n.title or n.slug, href=n.path))
         )
