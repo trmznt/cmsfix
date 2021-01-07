@@ -155,20 +155,6 @@ def add_globals(ev):
     ev['dbh'] = get_dbhandler
 
 
-def main_xxx(global_config, **settings):
-    """ This function returns a Pyramid WSGI application.
-    """
-    config = Configurator(settings=settings)
-    config.include('pyramid_chameleon')
-    config.add_static_view('static', 'static', cache_max_age=3600)
-    config.add_route('home', '/')
-    config.add_view('cmsfix.views.home.index', route_name='home')
-    config.include( includeme )
-    set_workflow(GroupwareWorkflow())
-    #config.scan()
-    return config.make_wsgi_app()
-
-
 def main(global_config, **settings):
     cerr('CMSFix main() is running...')
     config = init_app(global_config, settings, prefix='/mgr'
