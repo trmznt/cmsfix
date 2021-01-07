@@ -86,7 +86,9 @@ class PageNodeViewer(NodeViewer):
         eform, jscode = super().edit_form(request, create)
         eform.get('cmsfix.node-main').add(
             input_text('cmsfix-title', 'Title', value=n.title, offset=1),
-            input_textarea('cmsfix-content', 'Content', value=n.content, offset=1, size="18x8"),
+            input_textarea('cmsfix-content', 'Content', value=n.content, offset=1, size="18x8",
+                info =  'Docs on <a href="/dashboard/docs/reST.rst" target="_blank">reStructuredText</a>'
+                        ' and <a href="/dashboard/docs/@macro" target="_blank">Macros</a>' ),
             #div(literal(node.content) if node.mimetype == 'text/html' else node.content,
             #    id='cmsfix-content', name='cmsfix-content'),
             input_textarea('cmsfix-summary', 'Summary', value=n.summary, offset=1, size='5x8'),
