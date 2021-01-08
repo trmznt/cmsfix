@@ -303,7 +303,7 @@ def toolbar_xxx(request, n):
     return bar
 
 
-def render_rst_xxx(text, format='html'):
+def render_rst(text, format='html'):
 
     parts = docutils.core.publish_parts( text, writer_name=format,
         settings_overrides={'initial_header_level': 2} )
