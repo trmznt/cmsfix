@@ -14,7 +14,7 @@
 <html lang="en">
   <head>
   <meta charset="utf-8" />
-  <title>${request.get_resource('plasmogen.title', None) or "PlasmoGEN"}</title>
+  <title>${request.get_resource('cmsfix.title', None) or "CMSFix"}</title>
   <meta name='viewport' content='width=device-width, initial-scale=1.0' />
 
   <!-- styles -->
