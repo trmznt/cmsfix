@@ -105,3 +105,9 @@ def reindex():
     index_all()
 
 # end of file
+#
+# Example:
+#
+# : transaction.begin()
+# : cmds.rm( cmds.get_node(56) )
+# : transaction.commit()
