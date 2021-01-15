@@ -47,6 +47,7 @@ class PageNodeViewer(NodeViewer):
         return render_to_response(template_view,
             {   'node': node,
                 'breadcrumb': self.breadcrumb(request),
+                'infobar': self.infobar(request),
                 'html': content,
                 'stickybar': self.statusbar(request),
                 'macro': macro,

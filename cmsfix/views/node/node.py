@@ -419,7 +419,16 @@ class NodeViewer(object):
         return nav(html)
 
 
-    def toolbar(self, request, workflow=None):
+    def infobar(self, request, node=None):
+
+        node = node or self.node
+        html = div()[
+            span("Last update: %s by %s" % (node.stamp.strftime("%Y/%m/%d %H:%M"), node.lastuser))
+            ]
+        return html
+
+
+    def toolbar_XXX(self, request, workflow=None):
 
         n = self.node
 
