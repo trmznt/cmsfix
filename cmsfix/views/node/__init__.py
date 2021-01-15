@@ -1,7 +1,8 @@
 
 from rhombus.lib.utils import get_dbhandler, cout, cerr
 from rhombus.views import *
-from rhombus.views.generics import error_page
+from rhombus.views.generics import error_page, not_authorized
+from rhombus.views.user import get_login_url
 from rhombus.lib.tags import *
 from rhombus.lib.modals import popup, modal_delete
 
@@ -19,7 +20,8 @@ def index(request):
     wf = get_workflow(n)
 
     if not wf.is_accessible(n, request):
-        return error_page(request, 'Page is not accessible!')
+        return not_authorized(request, 'Your login is not authorized to access the page.'
+            if request.user else a('Please login first.', href=get_login_url(request)))
 
     #module = get_module(n.__class__)
     viewer = get_viewer(n.__class__)
@@ -34,7 +36,7 @@ def view(request):
     wf = get_workflow(n)
 
     if not wf.is_manageable(n, request):
-        return error_page(request, 'Page is not manageable by current user!')
+        return not_authorized(request, 'Page is not manageable by current user!')
 
     #module = get_module(n.__class__)
     viewer = get_viewer(n.__class__)
@@ -49,7 +51,7 @@ def content(request):
     wf = get_workflow(n)
 
     if not wf.is_manageable(n, request):
-        return error_page(request, 'You are not authorized to view the content of this node!')
+        return not_authorized(request, 'You are not authorized to view the content of this node!')
 
     viewer = get_viewer(n.__class__)
     return viewer(n, request).content()
@@ -65,7 +67,7 @@ def info(request):
     wf = get_workflow(n)
 
     if not wf.is_manageable(n, request):
-        return error_page(request, 'You are not authorized to view this node meta information')
+        return not_authorized(request, 'You are not authorized to view this node meta information')
 
     viewer = get_viewer(n.__class__)
     return viewer(n, request).info()
@@ -91,7 +93,7 @@ def properties(request):
     wf = get_workflow(n)
 
     if not wf.is_manageable(n, request):
-        return error_page(request, 'You are not authorized to view this node properties')
+        return not_authorized(request, 'You are not authorized to view this node properties')
 
     # check stamp consistency
     result = check_stamp(request, n)
@@ -113,7 +115,7 @@ def edit(request):
     wf = get_workflow(n)
 
     if not wf.is_editable(n, request):
-        return error_page(request, 'You are not authorized to edit this node!')
+        return not_authorized(request, 'You are not authorized to edit this node!')
 
     # check stamp consistency
     result = check_stamp(request, n)
@@ -134,7 +136,7 @@ def add(request):
     wf = get_workflow(n)
 
     if not wf.is_manageable(n, request):
-        return error_page(request, 'You are not authorized to add a new node here!')
+        return not_authorized(request, 'You are not authorized to add a new node here!')
 
     # get the node type
     node_type = request.params.get('type', '')
@@ -159,7 +161,7 @@ def edit_next(request):
     wf = get_workflow()
 
     if not wf.is_manageable(n, request):
-        return error_page(request, 'You are not authorized to view the content of this node!')
+        return not_authorized(request, 'You are not authorized to view the content of this node!')
 
     viewer = get_viewer(n.__class__)
     return viewer(n, request).edit_next()
@@ -171,7 +173,7 @@ def yaml(request):
     wf = get_workflow(n)
 
     if not wf.is_accessible(n, request):
-        return error_page(request, 'Page is not accessible!')
+        return not_authorized(request, 'Page is not accessible!')
 
     return Response(n.as_yaml(), content_type='text/plain')
 
