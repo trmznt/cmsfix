@@ -388,7 +388,10 @@ def get_node(request):
     site = get_site(request)
 
     dbh = get_dbhandler()
-    n = dbh.get_node(path, site=site)
+    if path.startswith('/!'):
+        n = dbh.get_node_by_id( int(path[2:]))
+    else:
+        n = dbh.get_node(path, site=site)
     if not n:
         raise exc.HTTPNotFound('Node %s is not found in the system' % path)
 
