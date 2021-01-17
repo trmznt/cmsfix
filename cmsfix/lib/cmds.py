@@ -6,6 +6,7 @@ from cmsfix.models.node import Node, object_session
 
 import os, transaction
 
+_SITE_ = '*'
 
 def get_node(arg):
     """ get a node from arg """
@@ -18,7 +19,7 @@ def get_node(arg):
             return get_dbhandler().get_node_by_id(node_id)
         else:
             # treat arg as path or url
-            return get_dbhandler().get_node(arg)
+            return get_dbhandler().get_node(arg, _SITE_)
     if type(arg) == int:
         return get_dbhandler().get_node_by_id(arg)
 
@@ -39,6 +40,7 @@ def add(parent_node, a_node):
 
 def update(a_node, data):
     """ update a_node with data (either a dict or a node) """
+    a_node = get_node(a_node)
     prev_yaml = a_node.as_yaml()
     a_node.update(data)
     curr_yaml = a_node.as_yaml()
@@ -47,15 +49,40 @@ def update(a_node, data):
 
 def mv(a_node, dest_node):
     """ move a_node to dest_node """
+    a_node = get_node(a_node)
+    dest_node = get_node(dest_node)
     pass
 
 
 def rm(a_node, opts=None):
     """ remove a_node, recursively if needed """
+    a_node = get_node(a_node)
     sess = object_session(a_node)
     if not sess:
         sess = get_dbhandler().session()
     sess.delete( a_node )
+
+
+def setslug(a_node, new_slug):
+    """ change slug  of a node and reset path to the node and all children """
+    a_node = get_node(a_node)
+    a_node.slug = new_slug
+    count = 0
+    for c in a_node.get_descendants():
+        c.generate_path()
+        count += 1
+    print('Reseting path for %d node(s)' % count)
+
+
+def listsites():
+    dbh = get_dbhandler()
+    for s in dbh.session().query(dbh.Site).all():
+        print(s.fqdn)
+
+
+def setsite(site):
+    global _SITE_
+    _SITE_ = site
 
 
 def dump(target_dir, node=None, recursive=False):
