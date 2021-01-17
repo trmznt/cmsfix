@@ -12,6 +12,7 @@ from sqlalchemy_utils.types.uuid import UUIDType
 from sqlalchemy_utils.types.json import JSONType
 
 import os
+from collections import deque
 
 
 ## the models employed Rhombus' BaseMixIn to provide id, lastuser_id and stamp
@@ -256,6 +257,34 @@ class Node(BaseMixIn, Base):
     def url(self):
         """ remove the leading slash (/) for use with request.route_url """
         return self.path[1:]
+
+
+    def get_descendants(self):
+        """ perform preorder iterative traversal of all children """
+        stack = deque([])
+        preorder = [ self ]
+        stack.append(self)
+
+        while len(stack) > 0:
+            flag = 0
+            if (stack[len(stack)-1]).children.count() == 0:
+                X = stack.pop()
+
+            else:
+                par = stack[len(stack)-1]
+
+            for i in range(0, par.children.count()):
+                child = par.children[i]
+                if child not in preorder:
+                    flag = 1
+                    stack.append(child)
+                    preorder.append(child)
+                    break
+
+            if flag == 0:
+                stack.pop()
+
+        return preorder
 
 
     @classmethod
