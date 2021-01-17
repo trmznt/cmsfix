@@ -265,6 +265,9 @@ class Node(BaseMixIn, Base):
         preorder = [ self ]
         stack.append(self)
 
+        if self.chidren.count() == 0:
+            return preorder
+
         while len(stack) > 0:
             flag = 0
             if (stack[len(stack)-1]).children.count() == 0:
