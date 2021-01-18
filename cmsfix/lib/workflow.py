@@ -153,6 +153,7 @@ class GroupwareWorkflow(BaseWorkflow):
     """ simple workflow, suitable for intranet
         0 - public - all can access within internal network
         1 - protected - only logged user can access
+        		* group member can edit/manage
         2 - restricted - permission based on group,
                 * group owner can edit/manage
                 * group member can access
@@ -188,8 +189,8 @@ class GroupwareWorkflow(BaseWorkflow):
             return True
         if node.user_id == user.id:
             return True
-        if node.state < 3 and node.group.is_admin(user):
-        	# check if user is an admin of node.group 
+        if node.state < 3 and node.group.has_member(user):
+            # check if user is a member of node.group
             return True
         return False
 
