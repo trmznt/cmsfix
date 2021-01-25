@@ -80,10 +80,13 @@ def postedit(content, node):
 
 def node_link(text, dbh):
 
-    if text[3] == '{':
-        node = dbh.get_nodes_by_uuids(text[4:-1])
-    else:
-        node = dbh.get_node_by_id(int(text[3:]))
+    try:
+        if text[3] == '{':
+            node = dbh.get_nodes_by_uuids(text[4:-1])
+        else:
+            node = dbh.get_node_by_id(int(text[3:]))
+    except:
+        node = None
 
     if node is None:
         return literal('<b>%s</b>' % text)
