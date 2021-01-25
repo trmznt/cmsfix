@@ -65,7 +65,7 @@ def postedit(content, node):
             if group[3] != '{':
                 # convert to UUID
                 node = dbh.get_node_by_id(int(group[3:]))
-                nc += '///{' + str(node.uuid) + '}'
+                nc += ('///{' + str(node.uuid) + '}' if node else group)
             else:
                 nc += group
 
@@ -85,6 +85,8 @@ def node_link(text, dbh):
     else:
         node = dbh.get_node_by_id(int(text[3:]))
 
+    if node is None:
+        return literal('<b>%s</b>' % text)
     return literal('<a href="/%s">%s</a>' % (node.url, node.title))
 
 
@@ -252,6 +254,9 @@ def M_ListNode(node, components, request):
             pass
 
     nodes = get_dbhandler().get_nodes(**kwargs)
+
+    # check accessibility
+    nodes = [ n for n in nodes if get_workflow(n).is_accessible(n, request) ]
     html = div()
     toc = ul()
 
@@ -263,4 +268,3 @@ def M_ListNode(node, components, request):
 
     html.add(toc)
     return html
-
