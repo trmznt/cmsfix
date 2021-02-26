@@ -28,6 +28,8 @@ class PageNodeViewer(NodeViewer):
             content = literal(macro.postrender(content, node, request))
         elif node.mimetype == 'text/html':
             content = literal(node.content)
+        elif node.mimetype == 'text/plain':
+            content = pre(node.content)
         else:
             content = node.content
 
