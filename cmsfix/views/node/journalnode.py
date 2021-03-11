@@ -1,10 +1,7 @@
 
 from cmsfix.models.journalnode import JournalNode, JournalItemNode, object_session
 from cmsfix.views import *
-from cmsfix.views.node.node import ( nav, node_submit_bar,
-            breadcrumb, node_info,
-            NodeViewer,
-)
+from cmsfix.views.node.node import nav, node_submit_bar, NodeViewer
 from cmsfix.lib.workflow import get_workflow
 
 

@@ -21,6 +21,7 @@ class NodeViewer(object):
     template_edit = 'cmsfix:templates/node/edit.mako'
     template_view = 'cmsfix:templates/node/node.mako'
     next_route_name = 'node-edit-next'
+    mimetype_filter = None
 
 
     def __init__(self, node, request):
@@ -584,7 +585,7 @@ class nav(doubletag):
     _tag = 'nav'
 
 
-def breadcrumb(request, n):
+def breadcrumb_XXX(request, n):
 
     leaf = n
     slugs = []
@@ -605,5 +606,5 @@ def breadcrumb(request, n):
     return html
 
 
-def node_info(request, n):
+def node_info_XXX(request, n):
     return p('Site: %s | Page ID: %s | URL: %s' % (n.site.fqdn, n.id, n.path))
