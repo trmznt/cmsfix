@@ -16,7 +16,7 @@ class FileNode(Node):
     filename = Column(types.String(256), nullable=False)
     pathname = Column(types.String(256), nullable=False)
     desc = Column(types.String(1024), nullable=False, server_default='')
-    data = Column(types.Binary(), nullable=False)
+    data = Column(types.LargeBinary(), nullable=False)
     size = Column(types.Integer, nullable=False, server_default='0')
 
     __mapper_args__ = { 'polymorphic_identity': 2 }
