@@ -341,7 +341,8 @@ class NodeViewer(object):
                 input_select('cmsfix-user_id', 'User', value=node.user_id, offset=1, size=2,
                     options = [ (u.id, u.login) for u in dbh.get_user(request.user.id).group_users() ]),
                 input_select_ek('cmsfix-mimetype_id', 'MIME type', value=node.mimetype_id,
-                    parent_ek = dbh.get_ekey('@MIMETYPE'), offset=1, size=2),
+                    parent_ek = dbh.get_ekey('@MIMETYPE'), option_filter = self.mimetype_filter,
+                    offset=1, size=2),
                 ],
                 name='cmsfix.node-header'
             ),

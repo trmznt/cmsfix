@@ -17,6 +17,7 @@ class PageNodeViewer(NodeViewer):
 
     template_edit = 'cmsfix:templates/pagenode/edit.mako'
     template_view = 'cmsfix:templates/pagenode/node.mako'
+    mimetype_filter = lambda c, x: x.startswith('text/')
 
     def render(self, request):
 
