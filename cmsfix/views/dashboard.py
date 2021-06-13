@@ -16,7 +16,7 @@ def docs(request):
 
     path = os.path.normpath(request.matchdict.get('path', '') or '/index.rst')
     path = '/' + path if not path.startswith('/') else path
-    if path == '@macro':
+    if path == '/@macro':
         return show_macro(request)
     return fso.serve_file(path, mount_point=('/', "cmsfix:../docs/"),
                     formatter = lambda abspath: formatter(abspath, request))
