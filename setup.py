@@ -15,7 +15,8 @@ requires = [
     'waitress',
     'docutils',
     'python-dateutil',
-    'whoosh'
+    'whoosh',
+    'sqlalchemy_utils',
     ]
 
 setup(name='cmsfix',

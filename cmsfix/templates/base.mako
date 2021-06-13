@@ -19,9 +19,9 @@
   <title>${request.get_resource('cmsfix.title', None) or "CMSFix"}</title>
 
   <!-- styles -->
-  <link href="/assets/rb/bootstrap-4.4.1-dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link href="/assets/rb/fontawesome-free-5.12.1-web/css/all.min.css" rel="stylesheet" />
-  <link href="${request.static_url('rhombus:static/fonts/source-sans-pro.css')}" rel="stylesheet" />
+  <link href="/assets/rb/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="/assets/rb/fontawesome/css/all.min.css" rel="stylesheet" />
+  <link href="/assets/rb/fonts/source-sans-pro.css" rel="stylesheet" />
   <link href="${request.static_url('rhombus:static/select2/css/select2.min.css')}" rel="stylesheet" />
   <link href="${request.static_url('rhombus:static/select2/css/select2-bootstrap.min.css')}" rel="stylesheet" />
   <link href="${request.static_url('rhombus:static/css/custom.css')}" rel="stylesheet" />
@@ -65,7 +65,7 @@
       <div class='row'>
       <div class='col-md-12'>
         <!-- font: Nobile -->
-        <p>(C) 2020 Eijkman Institute for Molecular Biology, Indonesia</p>
+        <p>${request.get_resource('cmsfix.copyright', None) or "(C) CMSFix"}</p>
       </div>
       </div>
     </div>
@@ -123,9 +123,9 @@ ${self.scriptlinks()}
 ##
 ##
 <%def name="scriptlinks()">
-    <script src="/assets/rb/jquery-3.4.1.min.js"></script>
-    <script src="/assets/rb/popper.min.js"></script>
-    <script src="/assets/rb/bootstrap-4.4.1-dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/assets/rb/js/jquery-3.6.0.min.js"></script>
+    <script src="/assets/rb/js/popper.min.js"></script>
+    <script src="/assets/rb/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="${request.static_url('rhombus:static/select2/js/select2.min.js')}"></script>
 
     ${self.jslink()}

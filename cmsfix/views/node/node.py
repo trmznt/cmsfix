@@ -21,6 +21,7 @@ class NodeViewer(object):
     template_edit = 'cmsfix:templates/node/edit.mako'
     template_view = 'cmsfix:templates/node/node.mako'
     next_route_name = 'node-edit-next'
+    mimetype_filter = None
 
 
     def __init__(self, node, request):
@@ -340,7 +341,8 @@ class NodeViewer(object):
                 input_select('cmsfix-user_id', 'User', value=node.user_id, offset=1, size=2,
                     options = [ (u.id, u.login) for u in dbh.get_user(request.user.id).group_users() ]),
                 input_select_ek('cmsfix-mimetype_id', 'MIME type', value=node.mimetype_id,
-                    parent_ek = dbh.get_ekey('@MIMETYPE'), offset=1, size=2),
+                    parent_ek = dbh.get_ekey('@MIMETYPE'), option_filter = self.mimetype_filter,
+                    offset=1, size=2),
                 ],
                 name='cmsfix.node-header'
             ),
@@ -584,7 +586,7 @@ class nav(doubletag):
     _tag = 'nav'
 
 
-def breadcrumb(request, n):
+def breadcrumb_XXX(request, n):
 
     leaf = n
     slugs = []
@@ -605,5 +607,5 @@ def breadcrumb(request, n):
     return html
 
 
-def node_info(request, n):
+def node_info_XXX(request, n):
     return p('Site: %s | Page ID: %s | URL: %s' % (n.site.fqdn, n.id, n.path))

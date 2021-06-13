@@ -1,7 +1,6 @@
 from cmsfix.models.journalnode import JournalItemNode
 from cmsfix.views import *
-from cmsfix.views.node.node import ( nav, node_submit_bar, breadcrumb,
-)
+from cmsfix.views.node.node import nav, node_submit_bar
 from cmsfix.views.node.pagenode import render_rst, PageNodeViewer
 from cmsfix.lib.workflow import get_workflow
 from dateutil.parser import parse as parse_date

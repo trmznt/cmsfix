@@ -63,7 +63,7 @@ class DBHandler(rho_handler.DBHandler):
     def get_nodes_by_level(self, level):
         return self.Node.query(self.session()).filter( self.Node.level == level)
 
-    def get_nodes(self, **kwargs):
+    def get_nodes(self, root=None, **kwargs):
 
         if 'type' in kwargs:
             _type = kwargs['type']

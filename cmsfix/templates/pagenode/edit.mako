@@ -34,13 +34,13 @@ ${eform}
 
 ##
 <%def name='jslink()'>
-    <script src="/static/trumbowyg/dist/trumbowyg.min.js"></script>
-    <script src="/static/behave/behave.js"></script>
+    <script src="/assets/cf/trumbowyg/dist/trumbowyg.min.js"></script>
+    <script src="/assets/cf/behave/behave.js"></script>
 </%def>
 
 ##
 <%def name='stylelink()'>
-    <link rel="stylesheet" href="/static/trumbowyg/dist/ui/trumbowyg.min.css">
+    <link rel="stylesheet" href="/assets/cf/trumbowyg/dist/ui/trumbowyg.min.css">
 </%def>
 
 
