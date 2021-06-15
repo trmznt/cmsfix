@@ -160,6 +160,8 @@ class Node(BaseMixIn, Base):
                 session = get_dbhandler().session()
                 with session.no_autoflush:
                     for tag_id in obj['tags']:
+                        if tag_id.startswith(':'):
+                            tag_id = int(tag_id[1:])
                         Tag.add_tag(self, tag_id, user_id, session)
 
                 #raise RuntimeError('FATAL ERR: node does not have id while performing tagging')
@@ -564,14 +566,20 @@ class Tag(Base):
 
 
     @classmethod
-    def sync_tags(cls, node_id, tag_ids, user_id = None, session = None):
-        # synchronize node_id and tag_ids
+    def sync_tags(cls, node_id, tag_keys, user_id = None, session = None):
+        # synchronize node_id and tag_keys
+        # tag_keys are eiither the actual, new tags or :id notation
+        # eg. [ 'DNA', 'RNA', ':65', ':24']
 
         # check sanity
         assert type(node_id) == int
-        for id in tag_ids:
-            if type(id) != int:
-                raise RuntimeError('FATAL ERR: tag_ids must contain ony integers')
+
+        tag_ids = []
+        for t in tag_keys:
+            if t[0] == ':':
+                tag_ids.append( int(t[1:]) )
+            else:
+                tag_ids.append( t )
 
         # check user_id first
         if not user_id:
@@ -589,15 +597,26 @@ class Tag(Base):
                 # remove this tag
                 session.delete(tag)
 
-        print(in_sync)
         for tag_id in tag_ids:
             if tag_id in in_sync: continue
-            print('add %d' % tag_id)
             cls.add_tag(node_id, tag_id, user_id, session)
 
 
     @classmethod
     def add_tag(cls, node_id, tag_id, user_id, session):
+        #XXX: check if we need to create new tag, and set the owner
+        if type(tag_id) == str:
+            # check if we alreday have identical tag
+            login = User.query(session).filter(User.id == user_id).one().login
+            ek_tag = EK.search('@TAG', None, session)
+            ekey = EK.search(tag_id, ek_tag, session)
+            if ekey is None:
+                # create new tag
+                ekey = EK(key=tag_id, desc=login, parent=ek_tag)
+                session.add(ekey)
+                session.flush([ekey])
+            tag_id = ekey.id
+
         assert type(tag_id) == int
 
         if not session:

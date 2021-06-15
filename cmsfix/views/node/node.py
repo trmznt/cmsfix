@@ -292,8 +292,10 @@ class NodeViewer(object):
             d['expire_time'] = f.get('cmsfix-expire_time')
         if 'cmsfix-mimetype_id' in f:
             d['mimetype_id'] = int(f.get('cmsfix-mimetype_id', 0))
-        if 'cmsfix-tags' in f:
-            d['tags'] = [ int(i) for i in f.getall('cmsfix-tags') ]
+        if 'cmsfix-tag-flag' in f:
+            # if the hidden field cmsfix-tag-flag exists, we assume we want to
+            # update tags as it is
+            d['tags'] = f.getall('cmsfix-tags') #[ int(i) for i in f.getall('cmsfix-tags') ]
         if 'cmsfix-options' in f:
             d['listed'] = True if 'cmsfix-listed' in f else False
         if 'cmsfix-json_code' in f:
@@ -324,8 +326,8 @@ class NodeViewer(object):
         # prepare generic tags
         tag_group = dbh.get_ekey('@TAG')
         tags = [ t for t in node.tags if t.tag.member_of_id == tag_group.id ]
-        tag_ids = [ t.tag_id for t in tags ]
-        tag_options = [ (t.tag_id, '%s [ %s ]' % (t.tag.key, t.tag.desc)) for t in tags ]
+        tag_ids = [ ':%d' % t.tag_id for t in tags ]
+        tag_options = [ (':%d' % t.tag_id, '%s [ %s ]' % (t.tag.key, t.tag.desc)) for t in tags ]
 
         pform = form( name='cmsfix/node', method=POST )
         pform.add(
@@ -350,6 +352,7 @@ class NodeViewer(object):
             fieldset(name='cmsfix.node-main'),
 
             fieldset(
+                input_hidden(name='cmsfix-tag-flag', value=1),
                 input_select('cmsfix-tags', 'Tags', offset=1, multiple=True,
                     options = tag_options, value = tag_ids ),
                 # below is a mean to flag that we have options in the form
@@ -373,7 +376,17 @@ class NodeViewer(object):
                 dataType: 'json',
                 data: function(params) { return { q: params.term }; },
                 processResults: function(data, params) { return { results: data }; }
-            }
+            },
+            createTag: function (params) {
+                var term = $.trim(params.term);
+                if (term === '') {
+                    return null;
+                }
+                return {
+                    id: term,
+                    text: term
+                }
+            },
         });
 
         ''' % request.route_url('tag-lookup')

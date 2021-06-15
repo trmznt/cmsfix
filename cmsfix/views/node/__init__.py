@@ -305,9 +305,10 @@ def tag_lookup(request):
             dbh.EK.member_of_id == g_key.id)
 
     # formating for select2 consumption
+    # tags use the actual key for id
 
     result = [
-        { 'id': k.id, 'text': '%s [ %s ]' % (k.key, k.desc) }
+        { 'id': ':%d ' % k.id, 'text': '%s [ %s ]' % (k.key, k.desc) }
         for k in ekeys]
 
     return result
