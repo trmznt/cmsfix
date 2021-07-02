@@ -12,6 +12,7 @@ from sqlalchemy_utils.types.uuid import UUIDType
 from sqlalchemy_utils.types.json import JSONType
 
 import os
+import uuid
 from collections import deque
 
 
@@ -160,7 +161,7 @@ class Node(BaseMixIn, Base):
                 session = get_dbhandler().session()
                 with session.no_autoflush:
                     for tag_id in obj['tags']:
-                        if tag_id.startswith(':'):
+                        if type(tag_id) == str and tag_id.startswith(':'):
                             tag_id = int(tag_id[1:])
                         Tag.add_tag(self, tag_id, user_id, session)
 
@@ -367,7 +368,7 @@ class Node(BaseMixIn, Base):
             _type_ = type(self).__name__,
             id = self.id,
             site = self.site.fqdn,
-            uuid = self.uuid,
+            uuid = str(self.uuid),
             slug = self.slug,
             path = self.path,
             level = self.level,
@@ -385,17 +386,17 @@ class Node(BaseMixIn, Base):
             listed = self.listed,
             mimetype = self.mimetype,
             json_code = self.json_code,
-            tags = [ t.tag.key for t in self.tags ]
+            tags = [ t.tag.key for t in self.tags ],
         )
 
 
     def as_yaml(self):
-        return yaml.dump(self.as_dict(), default_flow_style=False)
+        return yaml.safe_dump(self.as_dict(), default_flow_style=False)
 
     @classmethod
     def from_dict(cls, d, obj=None):
         if not obj:
-            obj = cls()
+            obj = cls(UUID = uuid.UUID(d['uuid']))
             cerr('Created instance of [%s]' % obj.__class__.__name__)
         obj.update(d)
         # update the low-level data
