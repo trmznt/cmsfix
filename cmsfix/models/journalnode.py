@@ -17,7 +17,7 @@ class JournalNode(Node):
 
     title = Column(types.String(256), nullable=False, server_default='')
     desc = Column(types.String(1024), nullable=False, server_default='')
-    settings = Column(YAMLCol(1024), nullable=False, server_default='')
+    settings = Column(types.JSON, nullable=False, server_default='null')
     order = Column(types.String(1), nullable=False, server_default='D')
     #flag = Column(types.Integer, nullable=False, server_default='0')
     # bitwise flags -> 1 << 0 (group or user-only addition)
