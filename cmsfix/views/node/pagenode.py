@@ -104,7 +104,7 @@ class PageNodeViewer(NodeViewer):
         #    checkbox_item('cmsfix-inmenu', 'In Menu', n.check_flags(n.f_inmenu)),
         #)
         eform.get('cmsfix-mimetype_id').attrs['onChange'] = 'set_editor(this.value);'
-        jscode += 'var html_mimetype=%d;\n' % dbh.EK.getid('text/html', dbh.session())
+        jscode += 'var html_mimetype=%d;\n' % dbh.EK.getid('text/html', dbh.session(), '@MIMETYPE')
 
         return eform, jscode
 
@@ -265,7 +265,7 @@ def edit_form_xxx(node, request, create=False):
     )
 
     eform.get('cmsfix-mimetype_id').attrs['onChange'] = 'set_editor(this.value);'
-    jscode += 'var html_mimetype=%d;\n' % dbh.EK.getid('text/html', dbh.session())
+    jscode += 'var html_mimetype=%d;\n' % dbh.EK.getid('text/html', dbh.session(), '@MIMETYPE')
 
     return eform, jscode
 

@@ -36,7 +36,7 @@ class JournalItemNodeViewer(PageNodeViewer):
             fieldset(
                 input_text('cmsfix-log_date', 'Log Date', value=n.log_date, offset=1) if create else
                 input_show('', 'Log Date', value=n.log_date, offset=1),
-                input_hidden('cmsfix-mimetype_id', value=dbh.EK.getid('text/x-rst', dbh.session())),
+                input_hidden('cmsfix-mimetype_id', value=dbh.EK.getid('text/x-rst', dbh.session(), '@MIMETYPE')),
                 name='cmsfix.node-header'
             ),
 
@@ -67,7 +67,7 @@ class JournalItemNodeViewer(PageNodeViewer):
         })
         ''' % request.route_url('tag-lookup')
 
-        jscode += 'var html_mimetype=%d;\n' % dbh.EK.getid('text/html', dbh.session())
+        jscode += 'var html_mimetype=%d;\n' % dbh.EK.getid('text/html', dbh.session(), '@MIMETYPE')
 
         return eform, jscode
 
