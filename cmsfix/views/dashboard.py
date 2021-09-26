@@ -3,18 +3,22 @@
 import os
 
 from rhombus.views import *
+from rhombus.views import roles, get_dbhandler, render_to_response, fso
+from rhombus.lib import roles as r
+from rhombus.lib import tags_b46 as t
 from cmsfix.lib.workflow import get_workflow
 from cmsfix.views.node.pagenode import render_rst
 from pyramid.response import FileResponse
 
-@roles(PUBLIC)
+
+@roles(r.PUBLIC)
 def index(request):
     """ return a generic dashboard """
 
-    html = div()
-    html.add( h2('Dashboard') )
+    html = t.div()
+    html.add(t.h2('Dashboard'))
 
-    html.add( h4('Latest updated pages') )
+    html.add(t.h4('Latest updated pages'))
 
     dbh = get_dbhandler()
     nodes = dbh.session().query(dbh.PageNode).order_by(dbh.PageNode.stamp.desc())
@@ -32,26 +36,26 @@ def index(request):
 
     for node in accessible_nodes:
         html.add(
-            div(class_='row')[
-                div(class_='col-md-1')[
+            t.div(class_='row')[
+                t.div(class_='col-md-1')[
                     node.stamp.date(),
                 ],
-                div(class_='col-md-1')[
+                t.div(class_='col-md-1')[
                     node.lastuser.login,
                 ],
-                div(class_='col-md-10')[
-                    node.parent.title if node.parent else '', ' >> ', a(node.title or 'N/A', href=node.url),
+                t.div(class_='col-md-10')[
+                    node.parent.title if node.parent else '', ' >> ', t.a(node.title or 'N/A', href=node.url),
                     '|', node.path,
                 ]
             ]
         )
 
-    return render_to_response('cmsfix:templates/node/generics.mako',
-                { 'content': html,
-                }, request = request )
+    return render_to_response('cmsfix:templates/node/generics.mako', {
+        'content': html,
+    }, request=request)
 
 
-@roles(PUBLIC)
+@roles(r.PUBLIC)
 def docs(request):
 
     path = os.path.normpath(request.matchdict.get('path', '') or '/index.rst')
@@ -59,37 +63,35 @@ def docs(request):
     if path == '/@macro':
         return show_macro(request)
     return fso.serve_file(path, mount_point=('/', "cmsfix:../docs/"),
-                    formatter = lambda abspath: formatter(abspath, request))
+                          formatter=lambda abspath: formatter(abspath, request))
 
 
-def formatter( abspath, request ):
+def formatter(abspath, request):
 
-    basepath, ext = os.path.splitext( abspath )
+    basepath, ext = os.path.splitext(abspath)
 
     if ext == '.rst':
         # restructuredtext
         with open(abspath) as f:
             text = f.read()
-            content = literal(render_rst(text))
+            content = t.literal(render_rst(text))
 
-        return render_to_response('cmsfix:templates/plainpage.mako',
-            {
-                'html': content,
-            }, request = request )
-
+        return render_to_response('cmsfix:templates/plainpage.mako', {
+            'html': content,
+        }, request=request)
 
     elif ext == '.md':
         raise NotImplementedError
 
     else:
-        return FileResponse( abspath )
+        return FileResponse(abspath)
 
 
 def show_macro(request):
 
     from cmsfix.lib.macro import macro_dict
 
-    html = div()
+    html = t.div()
     macros = macro_dict()
 
     macro_names = sorted(macros.keys())
@@ -99,13 +101,14 @@ def show_macro(request):
         f = macros[n]
 
         html.add(
-            h4(n),
-            div(class_='ml-5')[
-                literal(render_rst(f.__doc__)) if f.__doc__ else '',
+            t.h4(n),
+            t.div(class_='ml-5')[
+                t.literal(render_rst(f.__doc__)) if f.__doc__ else '',
             ]
         )
 
+    return render_to_response('cmsfix:templates/node/generics.mako', {
+        'content': html,
+    }, request=request)
 
-    return render_to_response('cmsfix:templates/node/generics.mako',
-                { 'content': html,
-                }, request = request )
+# EOF
