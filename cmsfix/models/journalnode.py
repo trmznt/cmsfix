@@ -1,5 +1,6 @@
 
 from cmsfix.models.node import *
+from cmsfix.lib.roles import SYSADM, DATAADM
 from cmsfix.models.pagenode import PageNode
 from cmsfix.models.filenode import FileNode
 from cmsfix.lib.workflow import set_workflow, get_workflow, GroupwareWorkflow
