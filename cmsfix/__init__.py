@@ -1,8 +1,7 @@
 from pyramid.config import Configurator
 from pyramid.events import subscriber, BeforeRender
 from rhombus import init_app
-from rhombus.lib.utils import cerr, cout, cexit, get_dbhandler
-from rhombus.models.core import set_func_userid
+from rhombus.lib.utils import cerr, cout, cexit, get_dbhandler, set_func_userid, dbhandler_userid_func
 
 # set configuration in cmsfix.scripts.run
 from cmsfix.scripts import run
@@ -31,7 +30,7 @@ def includeme( config ):
 
     # CMSFix configuration
 
-    set_func_userid( get_userid_func )
+    set_func_userid(dbhandler_userid_func)
 
     config.add_static_view('static', 'static', cache_max_age=3600)
     config.add_subscriber( add_globals, BeforeRender )
@@ -142,10 +141,6 @@ def includeme( config ):
     if 'cmsfix.title' in config.registry.settings:
         import rhombus
         rhombus._TITLE_ = config.registry.settings['cmsfix.title']
-
-
-def get_userid_func():
-    return get_dbhandler().session().user.id
 
 
 def add_globals(ev):
