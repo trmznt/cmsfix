@@ -381,8 +381,11 @@ class Node(BaseMixIn, Base):
     @classmethod
     def from_dict(cls, d, obj=None):
         if not obj:
-            obj = cls(UUID=uuid.UUID(d['uuid']))
-            cerr('Created instance of [%s]' % obj.__class__.__name__)
+            obj = cls()
+        if 'uuid' in d:
+            obj.uuid = uuid.UUID(d['uuid'])
+            assert d['uuid'] == str(obj.uuid)
+        cerr(f'Created instance of [{obj.__class__.__name__}] with uuid: {obj.uuid}')
         obj.update(d)
         # update the low-level data
         # obj.user = None
