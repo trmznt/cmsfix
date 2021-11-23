@@ -300,11 +300,11 @@ def fileupload(request):
         file_mimetype = mimetypes.guess_type(filename)
         try:
             if not file_mimetype[0]:
-                mimetype_id = dbh.EK._id('application/unknown')
+                mimetype_id = dbh.EK._id('application/unknown', grp='@MIMETYPE')
             else:
-                mimetype_id = dbh.EK._id( file_mimetype[0])
+                mimetype_id = dbh.EK._id(file_mimetype[0], grp='@MIMETYPE')
         except KeyError:
-            mimetype_id = dbh.EK._id( 'application/unknown' )
+            mimetype_id = dbh.EK._id('application/unknown', grp='@MIMETYPE')
 
         return { 'basename': filename, 'size': size, 'mimetype_id': mimetype_id }
 
